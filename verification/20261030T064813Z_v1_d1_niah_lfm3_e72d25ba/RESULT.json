@@ -1,0 +1,187 @@
+{
+  "checks": [
+    {
+      "detail": [
+        {
+          "allocation": [
+            8,
+            8,
+            8,
+            8
+          ],
+          "blocks": 4,
+          "mode": "uniform",
+          "ok": true,
+          "slots": 32
+        },
+        {
+          "allocation": [
+            2,
+            4,
+            9,
+            17
+          ],
+          "blocks": 4,
+          "mode": "effective_rank",
+          "ok": true,
+          "slots": 32
+        },
+        {
+          "allocation": [
+            8
+          ],
+          "blocks": 1,
+          "mode": "uniform",
+          "ok": true,
+          "slots": 8
+        },
+        {
+          "allocation": [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ],
+          "blocks": 8,
+          "mode": "effective_rank",
+          "ok": true,
+          "slots": 16
+        }
+      ],
+      "name": "allocator_budget",
+      "passed": true
+    },
+    {
+      "detail": {
+        "condition": 36.9675816100685,
+        "condition_finite": true,
+        "forgetting_halved": true,
+        "forgetting_ratio": 0.5,
+        "recon_after": 0.010111900046467781,
+        "recon_before": 1.0,
+        "recon_improved": true,
+        "trust_scaled": true
+      },
+      "name": "memory_w2_reduces_error",
+      "passed": true
+    },
+    {
+      "detail": 36.9675816100685,
+      "name": "memory_condition_finite",
+      "passed": true
+    },
+    {
+      "detail": 0.5,
+      "name": "memory_forgetting_halves_values",
+      "passed": true
+    },
+    {
+      "detail": null,
+      "name": "memory_trust_region_scales",
+      "passed": true
+    },
+    {
+      "detail": "ok=True mismatch_rejected=True",
+      "name": "kvslice_invariants",
+      "passed": true
+    },
+    {
+      "detail": [
+        0,
+        1,
+        2
+      ],
+      "name": "exact_window_position_alignment",
+      "passed": true
+    },
+    {
+      "detail": "clean=0 tampered=2",
+      "name": "archive_seal_and_tamper_detection",
+      "passed": true
+    },
+    {
+      "detail": 0.03125,
+      "name": "mcnemar_known_value",
+      "passed": true
+    }
+  ],
+  "details": {
+    "allocator": [
+      {
+        "allocation": [
+          8,
+          8,
+          8,
+          8
+        ],
+        "blocks": 4,
+        "mode": "uniform",
+        "ok": true,
+        "slots": 32
+      },
+      {
+        "allocation": [
+          2,
+          4,
+          9,
+          17
+        ],
+        "blocks": 4,
+        "mode": "effective_rank",
+        "ok": true,
+        "slots": 32
+      },
+      {
+        "allocation": [
+          8
+        ],
+        "blocks": 1,
+        "mode": "uniform",
+        "ok": true,
+        "slots": 8
+      },
+      {
+        "allocation": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "blocks": 8,
+        "mode": "effective_rank",
+        "ok": true,
+        "slots": 16
+      }
+    ],
+    "archive": {
+      "clean_problems": [],
+      "tampered_problems": [
+        "artifact digest mismatch: artifacts/payload.json",
+        "artifact size mismatch: artifacts/payload.json"
+      ]
+    },
+    "mcnemar_p": 0.03125,
+    "memory": {
+      "condition": 36.9675816100685,
+      "condition_finite": true,
+      "forgetting_halved": true,
+      "forgetting_ratio": 0.5,
+      "recon_after": 0.010111900046467781,
+      "recon_before": 1.0,
+      "recon_improved": true,
+      "trust_scaled": true
+    }
+  },
+  "schema_version": 1,
+  "status": "PASS",
+  "status_detail": "PASS",
+  "verdict": "PASS"
+}

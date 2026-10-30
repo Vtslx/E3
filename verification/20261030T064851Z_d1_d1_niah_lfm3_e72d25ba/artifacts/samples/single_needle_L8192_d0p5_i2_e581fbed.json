@@ -1,0 +1,740 @@
+{
+  "arms": {
+    "C0_full": {
+      "arm_id": "C0_full",
+      "build_s": 0.0,
+      "decode_s": 0.8422292500035837,
+      "effective_length": 8223,
+      "error": null,
+      "generated_code": "80438",
+      "generated_correct": true,
+      "prefill_s": 9.600890333997086,
+      "result": {
+        "arm_id": "C0_full",
+        "condition_number_final": NaN,
+        "context_length": 8192,
+        "depth": 0.5,
+        "diagnostics": {
+          "attribute": "",
+          "build": {},
+          "build_s": 0.0,
+          "cache_bytes": 104028160,
+          "candidate_logprobs": {
+            "53427": -21.045342445373535,
+            "67924": -24.25969362258911,
+            "71219": -24.56461191177368,
+            "80438": -0.005827727756695822
+          },
+          "candidate_probabilities": {
+            "53427": 7.288780233722144e-10,
+            "67924": 2.928733647318666e-11,
+            "71219": 2.1590144364286564e-11,
+            "80438": 0.9999999992202444
+          },
+          "context_token_sha256": "e581fbed76bc4ca16b858e1b49ff3565986d403e14bb31803f948e3f18ca13cd",
+          "correct_index": 0,
+          "decode_s": 0.8422292500035837,
+          "distance_from_end": 4096,
+          "effective_length": 8223,
+          "expected_answer_text": "80438",
+          "generated_code": "80438",
+          "generated_correct": true,
+          "gold_candidate_probability": 0.9999999992202444,
+          "gold_candidate_rank": 1,
+          "needle_position": 4096,
+          "options": [
+            "80438",
+            "67924",
+            "53427",
+            "71219"
+          ],
+          "owner": "courier",
+          "prefill_s": 9.600890333997086,
+          "score_s": 0.3634845830092672,
+          "step_entropy_mean": 1.3008668850234244
+        },
+        "elapsed_s": 10.806604167009937,
+        "exact_match": true,
+        "generated_text": "80438\n\nExplanation: In the provided text, there is a line that says",
+        "generated_token_ids": [
+          24736,
+          2481,
+          8,
+          91180,
+          34,
+          529,
+          278,
+          4116,
+          2803,
+          20,
+          912,
+          355,
+          267,
+          2216,
+          395,
+          2997
+        ],
+        "gold_answer": "80438",
+        "gold_first_token_logprob": -0.005827727756695822,
+        "gold_first_token_rank": 1,
+        "kv_bytes_per_token": 12698,
+        "memory_bytes": 0,
+        "peak_memory_bytes": 3948068864,
+        "predicted_answer": "80438",
+        "recon_error_final": NaN,
+        "recon_error_trajectory": [],
+        "sample_id": "single_needle_L8192_d0p5_i2_e581fbed",
+        "task_kind": "single_needle",
+        "trust_scaled_count": 0
+      },
+      "score": {
+        "correct": true,
+        "gold_code": "80438",
+        "gold_logprob": -0.005827727756695822,
+        "gold_probability": 0.9999999992202444,
+        "gold_rank": 1,
+        "logprobs": {
+          "53427": -21.045342445373535,
+          "67924": -24.25969362258911,
+          "71219": -24.56461191177368,
+          "80438": -0.005827727756695822
+        },
+        "predicted_code": "80438",
+        "probabilities": {
+          "53427": 7.288780233722144e-10,
+          "67924": 2.928733647318666e-11,
+          "71219": 2.1590144364286564e-11,
+          "80438": 0.9999999992202444
+        }
+      },
+      "score_s": 0.3634845830092672
+    },
+    "C1_stream": {
+      "arm_id": "C1_stream",
+      "build_s": 0.0,
+      "decode_s": 0.7321083339920733,
+      "effective_length": 2191,
+      "error": null,
+      "generated_code": null,
+      "generated_correct": false,
+      "prefill_s": 9.925020374997985,
+      "result": {
+        "arm_id": "C1_stream",
+        "condition_number_final": NaN,
+        "context_length": 8192,
+        "depth": 0.5,
+        "diagnostics": {
+          "attribute": "",
+          "build": {},
+          "build_s": 0.0,
+          "cache_bytes": 29906944,
+          "candidate_logprobs": {
+            "53427": -16.15270709991455,
+            "67924": -14.699551582336426,
+            "71219": -14.944656372070312,
+            "80438": -15.682796478271484
+          },
+          "candidate_probabilities": {
+            "53427": 0.09781487961126983,
+            "67924": 0.4183139496435402,
+            "71219": 0.32738191873420075,
+            "80438": 0.1564892520109893
+          },
+          "context_token_sha256": "e581fbed76bc4ca16b858e1b49ff3565986d403e14bb31803f948e3f18ca13cd",
+          "correct_index": 0,
+          "decode_s": 0.7321083339920733,
+          "distance_from_end": 4096,
+          "effective_length": 2191,
+          "expected_answer_text": "80438",
+          "generated_code": null,
+          "generated_correct": false,
+          "gold_candidate_probability": 0.1564892520109893,
+          "gold_candidate_rank": 3,
+          "needle_position": 4096,
+          "options": [
+            "80438",
+            "67924",
+            "53427",
+            "71219"
+          ],
+          "owner": "courier",
+          "prefill_s": 9.925020374997985,
+          "score_s": 0.3802274589834269,
+          "step_entropy_mean": 2.1381086313631386
+        },
+        "elapsed_s": 11.037356167973485,
+        "exact_match": false,
+        "generated_text": "1234567890\nQuestion: What is the passkey for the courier",
+        "generated_token_ids": [
+          9792,
+          25677,
+          23944,
+          24,
+          207,
+          36508,
+          34,
+          3246,
+          355,
+          278,
+          1729,
+          4016,
+          374,
+          278,
+          1785,
+          644
+        ],
+        "gold_answer": "80438",
+        "gold_first_token_logprob": -15.682796478271484,
+        "gold_first_token_rank": 3,
+        "kv_bytes_per_token": 3650,
+        "memory_bytes": 0,
+        "peak_memory_bytes": 3711090688,
+        "predicted_answer": "67924",
+        "recon_error_final": NaN,
+        "recon_error_trajectory": [],
+        "sample_id": "single_needle_L8192_d0p5_i2_e581fbed",
+        "task_kind": "single_needle",
+        "trust_scaled_count": 0
+      },
+      "score": {
+        "correct": false,
+        "gold_code": "80438",
+        "gold_logprob": -15.682796478271484,
+        "gold_probability": 0.1564892520109893,
+        "gold_rank": 3,
+        "logprobs": {
+          "53427": -16.15270709991455,
+          "67924": -14.699551582336426,
+          "71219": -14.944656372070312,
+          "80438": -15.682796478271484
+        },
+        "predicted_code": "67924",
+        "probabilities": {
+          "53427": 0.09781487961126983,
+          "67924": 0.4183139496435402,
+          "71219": 0.32738191873420075,
+          "80438": 0.1564892520109893
+        }
+      },
+      "score_s": 0.3802274589834269
+    },
+    "C3_memory": {
+      "arm_id": "C3_memory",
+      "build_s": 10.781234124995535,
+      "decode_s": 1.1005981659982353,
+      "effective_length": 2703,
+      "error": null,
+      "generated_code": null,
+      "generated_correct": false,
+      "prefill_s": 6.67001586407423e-07,
+      "result": {
+        "arm_id": "C3_memory",
+        "condition_number_final": Infinity,
+        "context_length": 8192,
+        "depth": 0.5,
+        "diagnostics": {
+          "attribute": "",
+          "build": {
+            "block_ranges": [
+              [
+                128,
+                640
+              ],
+              [
+                640,
+                1152
+              ],
+              [
+                1152,
+                1664
+              ],
+              [
+                1664,
+                2176
+              ],
+              [
+                2176,
+                2688
+              ],
+              [
+                2688,
+                3200
+              ],
+              [
+                3200,
+                3712
+              ],
+              [
+                3712,
+                4224
+              ],
+              [
+                4224,
+                4736
+              ],
+              [
+                4736,
+                5248
+              ],
+              [
+                5248,
+                5760
+              ],
+              [
+                5760,
+                6160
+              ]
+            ],
+            "build_seconds": 10.781234124995535,
+            "condition_checks": {
+              "10": [
+                340214.36457364226
+              ],
+              "14": [
+                538197.0417241174
+              ],
+              "18": [
+                Infinity
+              ],
+              "2": [
+                37467730.44074299
+              ],
+              "22": [
+                1393716.5940257062
+              ],
+              "6": [
+                158562.64690855608
+              ]
+            },
+            "forgetting_events": 3,
+            "importances": [
+              4.297910253206889,
+              4.00553943713506,
+              4.19027715921402,
+              4.029765208562215,
+              4.1698495745658875,
+              4.152151743570964,
+              4.098587453365326,
+              4.604981541633606,
+              4.122667749722798,
+              4.054991662502289,
+              3.7509107192357383,
+              3.9883676568667092
+            ],
+            "slot_offsets": [
+              0,
+              43,
+              86,
+              129,
+              172,
+              215,
+              258,
+              301,
+              344,
+              386,
+              428,
+              470
+            ],
+            "slots_per_block": [
+              43,
+              43,
+              43,
+              43,
+              43,
+              43,
+              43,
+              43,
+              42,
+              42,
+              42,
+              42
+            ]
+          },
+          "build_s": 10.781234124995535,
+          "cache_bytes": 48830464,
+          "candidate_logprobs": {
+            "53427": -15.88187026977539,
+            "67924": -14.693249702453613,
+            "71219": -14.992518424987793,
+            "80438": -15.355700969696045
+          },
+          "candidate_probabilities": {
+            "53427": 0.11892673137086329,
+            "67924": 0.3903829451651721,
+            "71219": 0.2894143636584526,
+            "80438": 0.20127595980551208
+          },
+          "context_token_sha256": "e581fbed76bc4ca16b858e1b49ff3565986d403e14bb31803f948e3f18ca13cd",
+          "correct_index": 0,
+          "decode_s": 1.1005981659982353,
+          "distance_from_end": 4096,
+          "effective_length": 2703,
+          "expected_answer_text": "80438",
+          "generated_code": null,
+          "generated_correct": false,
+          "gold_candidate_probability": 0.20127595980551208,
+          "gold_candidate_rank": 3,
+          "needle_position": 4096,
+          "options": [
+            "80438",
+            "67924",
+            "53427",
+            "71219"
+          ],
+          "owner": "courier",
+          "prefill_s": 6.67001586407423e-07,
+          "score_s": 0.33623133299988694,
+          "step_entropy_mean": 2.145649701124057
+        },
+        "elapsed_s": 12.218064290995244,
+        "exact_match": false,
+        "generated_text": "1234567890\nQuestion: What is the passkey for the courier",
+        "generated_token_ids": [
+          9792,
+          25677,
+          23944,
+          24,
+          207,
+          36508,
+          34,
+          3246,
+          355,
+          278,
+          1729,
+          4016,
+          374,
+          278,
+          1785,
+          644
+        ],
+        "gold_answer": "80438",
+        "gold_first_token_logprob": -15.355700969696045,
+        "gold_first_token_rank": 3,
+        "kv_bytes_per_token": 5960,
+        "memory_bytes": 12632064,
+        "peak_memory_bytes": 3719479296,
+        "predicted_answer": "67924",
+        "recon_error_final": 0.6183307270208994,
+        "recon_error_trajectory": [
+          0.6162956158320109,
+          0.6164307693640391,
+          0.6166338672240576,
+          0.6168487618366877,
+          0.6170520583788554,
+          0.6172823856274287,
+          0.6173437734444936,
+          0.6175042043129603,
+          0.6175758540630341,
+          0.6176938464244207,
+          0.6178138653437296,
+          0.6179551233847936,
+          0.6180827716986338,
+          0.6182095805803934,
+          0.6183307270208994
+        ],
+        "sample_id": "single_needle_L8192_d0p5_i2_e581fbed",
+        "task_kind": "single_needle",
+        "trust_scaled_count": 0
+      },
+      "score": {
+        "correct": false,
+        "gold_code": "80438",
+        "gold_logprob": -15.355700969696045,
+        "gold_probability": 0.20127595980551208,
+        "gold_rank": 3,
+        "logprobs": {
+          "53427": -15.88187026977539,
+          "67924": -14.693249702453613,
+          "71219": -14.992518424987793,
+          "80438": -15.355700969696045
+        },
+        "predicted_code": "67924",
+        "probabilities": {
+          "53427": 0.11892673137086329,
+          "67924": 0.3903829451651721,
+          "71219": 0.2894143636584526,
+          "80438": 0.20127595980551208
+        }
+      },
+      "score_s": 0.33623133299988694
+    },
+    "C4_memory_w1": {
+      "arm_id": "C4_memory_w1",
+      "build_s": 10.781234124995535,
+      "decode_s": 1.5709815839945804,
+      "effective_length": 2703,
+      "error": null,
+      "generated_code": null,
+      "generated_correct": false,
+      "prefill_s": 6.67001586407423e-07,
+      "result": {
+        "arm_id": "C4_memory_w1",
+        "condition_number_final": Infinity,
+        "context_length": 8192,
+        "depth": 0.5,
+        "diagnostics": {
+          "attribute": "",
+          "build": {
+            "block_ranges": [
+              [
+                128,
+                640
+              ],
+              [
+                640,
+                1152
+              ],
+              [
+                1152,
+                1664
+              ],
+              [
+                1664,
+                2176
+              ],
+              [
+                2176,
+                2688
+              ],
+              [
+                2688,
+                3200
+              ],
+              [
+                3200,
+                3712
+              ],
+              [
+                3712,
+                4224
+              ],
+              [
+                4224,
+                4736
+              ],
+              [
+                4736,
+                5248
+              ],
+              [
+                5248,
+                5760
+              ],
+              [
+                5760,
+                6160
+              ]
+            ],
+            "build_seconds": 10.781234124995535,
+            "condition_checks": {
+              "10": [
+                340214.36457364226
+              ],
+              "14": [
+                538197.0417241174
+              ],
+              "18": [
+                Infinity
+              ],
+              "2": [
+                37467730.44074299
+              ],
+              "22": [
+                1393716.5940257062
+              ],
+              "6": [
+                158562.64690855608
+              ]
+            },
+            "forgetting_events": 3,
+            "importances": [
+              4.297910253206889,
+              4.00553943713506,
+              4.19027715921402,
+              4.029765208562215,
+              4.1698495745658875,
+              4.152151743570964,
+              4.098587453365326,
+              4.604981541633606,
+              4.122667749722798,
+              4.054991662502289,
+              3.7509107192357383,
+              3.9883676568667092
+            ],
+            "slot_offsets": [
+              0,
+              43,
+              86,
+              129,
+              172,
+              215,
+              258,
+              301,
+              344,
+              386,
+              428,
+              470
+            ],
+            "slots_per_block": [
+              43,
+              43,
+              43,
+              43,
+              43,
+              43,
+              43,
+              43,
+              42,
+              42,
+              42,
+              42
+            ]
+          },
+          "build_s": 10.781234124995535,
+          "cache_bytes": 48830464,
+          "candidate_logprobs": {
+            "53427": -15.834844589233398,
+            "67924": -14.672046661376953,
+            "71219": -14.950717449188232,
+            "80438": -15.35356616973877
+          },
+          "candidate_probabilities": {
+            "53427": 0.12139040900433666,
+            "67924": 0.3883122562477144,
+            "71219": 0.2938704465685879,
+            "80438": 0.19642688817936096
+          },
+          "context_token_sha256": "e581fbed76bc4ca16b858e1b49ff3565986d403e14bb31803f948e3f18ca13cd",
+          "correct_index": 0,
+          "decode_s": 1.5709815839945804,
+          "distance_from_end": 4096,
+          "effective_length": 2703,
+          "expected_answer_text": "80438",
+          "generated_code": null,
+          "generated_correct": false,
+          "gold_candidate_probability": 0.19642688817936096,
+          "gold_candidate_rank": 3,
+          "needle_position": 4096,
+          "options": [
+            "80438",
+            "67924",
+            "53427",
+            "71219"
+          ],
+          "owner": "courier",
+          "prefill_s": 6.67001586407423e-07,
+          "score_s": 0.8254075000004377,
+          "step_entropy_mean": 2.122800517361611
+        },
+        "elapsed_s": 13.17762387599214,
+        "exact_match": false,
+        "generated_text": "1234567890\nQuestion: What is the passkey for the courier",
+        "generated_token_ids": [
+          9792,
+          25677,
+          23944,
+          24,
+          207,
+          36508,
+          34,
+          3246,
+          355,
+          278,
+          1729,
+          4016,
+          374,
+          278,
+          1785,
+          644
+        ],
+        "gold_answer": "80438",
+        "gold_first_token_logprob": -15.35356616973877,
+        "gold_first_token_rank": 3,
+        "kv_bytes_per_token": 5960,
+        "memory_bytes": 12632064,
+        "peak_memory_bytes": 3769810944,
+        "predicted_answer": "67924",
+        "recon_error_final": 0.6182446380456289,
+        "recon_error_trajectory": [
+          0.6162914286057154,
+          0.6164209942022959,
+          0.6166208138068517,
+          0.6168312927087148,
+          0.6170292049646378,
+          0.6172572175661722,
+          0.6173123220602671,
+          0.6174675971269608,
+          0.6175317913293839,
+          0.6176408678293228,
+          0.6177555670340856,
+          0.6178927471240362,
+          0.61801149447759,
+          0.6181288063526154,
+          0.6182446380456289
+        ],
+        "sample_id": "single_needle_L8192_d0p5_i2_e581fbed",
+        "task_kind": "single_needle",
+        "trust_scaled_count": 0
+      },
+      "score": {
+        "correct": false,
+        "gold_code": "80438",
+        "gold_logprob": -15.35356616973877,
+        "gold_probability": 0.19642688817936096,
+        "gold_rank": 3,
+        "logprobs": {
+          "53427": -15.834844589233398,
+          "67924": -14.672046661376953,
+          "71219": -14.950717449188232,
+          "80438": -15.35356616973877
+        },
+        "predicted_code": "67924",
+        "probabilities": {
+          "53427": 0.12139040900433666,
+          "67924": 0.3883122562477144,
+          "71219": 0.2938704465685879,
+          "80438": 0.19642688817936096
+        }
+      },
+      "score_s": 0.8254075000004377
+    }
+  },
+  "build_s": 10.781234124995535,
+  "error": null,
+  "prefill_s": 19.525911375996657,
+  "sample": {
+    "context_length": 8192,
+    "depth": 0.5,
+    "gold_answer": "80438",
+    "metadata": {
+      "attribute": "",
+      "code": "80438",
+      "context_token_sha256": "e581fbed76bc4ca16b858e1b49ff3565986d403e14bb31803f948e3f18ca13cd",
+      "correct_index": 0,
+      "distance_from_end": 4096,
+      "filler_seed": 7101,
+      "needle_position": 4096,
+      "needle_positions": [
+        [
+          4096,
+          4108
+        ]
+      ],
+      "needle_seed": 9107,
+      "options": [
+        "80438",
+        "67924",
+        "53427",
+        "71219"
+      ],
+      "owner": "courier",
+      "sentences": [
+        " The passkey for the courier is 80438."
+      ],
+      "task_index": 2
+    },
+    "prompt_tokens": 8208,
+    "sample_id": "single_needle_L8192_d0p5_i2_e581fbed",
+    "task_kind": "single_needle"
+  }
+}

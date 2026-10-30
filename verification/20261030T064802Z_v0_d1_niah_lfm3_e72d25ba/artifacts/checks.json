@@ -1,0 +1,56 @@
+[
+  {
+    "detail": "global=[2, 6, 10, 14, 18, 22] sliding=[4, 8, 12, 16, 20] conv=13",
+    "name": "layer_partition",
+    "passed": true
+  },
+  {
+    "detail": 512,
+    "name": "kv_width",
+    "passed": true
+  },
+  {
+    "detail": 224,
+    "name": "prefill_length",
+    "passed": true
+  },
+  {
+    "detail": "224 tokens, 4x128",
+    "name": "kv_shape",
+    "passed": true
+  },
+  {
+    "detail": "torch.bfloat16",
+    "name": "kv_dtype",
+    "passed": true
+  },
+  {
+    "detail": [
+      128000
+    ],
+    "name": "logits_finite",
+    "passed": true
+  },
+  {
+    "detail": null,
+    "name": "cache_invariants",
+    "passed": true
+  },
+  {
+    "detail": 0.03125,
+    "name": "rope_roundtrip",
+    "passed": true
+  },
+  {
+    "detail": 0.0,
+    "name": "prefill_determinism",
+    "passed": true
+  },
+  {
+    "detail": [
+      128000
+    ],
+    "name": "decode_finite",
+    "passed": true
+  }
+]

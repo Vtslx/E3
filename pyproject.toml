@@ -1,0 +1,64 @@
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sprm"
+version = "0.1.0"
+description = "SPRM: stochastic predictive regression memory. Research harness for Form A associative memory and Form N compressed prefix."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "Proprietary" }
+authors = [{ name = "E3 Research" }]
+dependencies = [
+  "torch==2.15.0",
+  "transformers==5.22.0",
+  "accelerate>=1.0",
+  "safetensors>=0.4.5",
+  "numpy>=2.0",
+  "PyYAML>=6.0.2",
+  "psutil>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3",
+  "pytest-timeout>=2.3",
+  "ruff>=0.8",
+  "mypy>=1.13",
+]
+
+[project.scripts]
+sprm = "sprm.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/sprm"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = [
+  "integration: requires the local LFM3 checkpoint and MPS",
+  "slow: takes more than 30 seconds",
+]
+timeout = 900
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF", "TID"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unreachable = true
+plugins = []
+exclude = ["tests/"]
+
+[[tool.mypy.overrides]]
+module = ["torch.*", "transformers.*", "yaml.*", "safetensors.*", "psutil.*"]
+ignore_missing_imports = true

@@ -1,0 +1,224 @@
+{
+  "by_arm": {
+    "C0_full": {
+      "accuracy": 0.9722222222222222,
+      "arm_id": "C0_full",
+      "by_context_length": {
+        "16384": {
+          "accuracy": 0.9861111111111112,
+          "correct": 71,
+          "total": 72
+        },
+        "32768": {
+          "accuracy": 0.9444444444444444,
+          "correct": 68,
+          "total": 72
+        },
+        "8192": {
+          "accuracy": 0.9861111111111112,
+          "correct": 71,
+          "total": 72
+        }
+      },
+      "by_task_kind": {
+        "conditional": {
+          "accuracy": 0.9305555555555556,
+          "correct": 67,
+          "total": 72
+        },
+        "multi_needle": {
+          "accuracy": 0.9861111111111112,
+          "correct": 71,
+          "total": 72
+        },
+        "single_needle": {
+          "accuracy": 1.0,
+          "correct": 72,
+          "total": 72
+        }
+      },
+      "correct": 210,
+      "mean_gold_logprob": -0.08426354650071988,
+      "mean_gold_probability": 0.9722893187551945,
+      "mean_gold_rank": 1.0277777777777777,
+      "total": 216
+    },
+    "C1_stream": {
+      "accuracy": 0.42592592592592593,
+      "arm_id": "C1_stream",
+      "by_context_length": {
+        "16384": {
+          "accuracy": 0.5416666666666666,
+          "correct": 39,
+          "total": 72
+        },
+        "32768": {
+          "accuracy": 0.2638888888888889,
+          "correct": 19,
+          "total": 72
+        },
+        "8192": {
+          "accuracy": 0.4722222222222222,
+          "correct": 34,
+          "total": 72
+        }
+      },
+      "by_task_kind": {
+        "conditional": {
+          "accuracy": 0.375,
+          "correct": 27,
+          "total": 72
+        },
+        "multi_needle": {
+          "accuracy": 0.4583333333333333,
+          "correct": 33,
+          "total": 72
+        },
+        "single_needle": {
+          "accuracy": 0.4444444444444444,
+          "correct": 32,
+          "total": 72
+        }
+      },
+      "correct": 92,
+      "mean_gold_logprob": -11.650705723804869,
+      "mean_gold_probability": 0.41067335555403556,
+      "mean_gold_rank": 2.189814814814815,
+      "total": 216
+    },
+    "C3_memory": {
+      "accuracy": 0.44907407407407407,
+      "arm_id": "C3_memory",
+      "by_context_length": {
+        "16384": {
+          "accuracy": 0.5694444444444444,
+          "correct": 41,
+          "total": 72
+        },
+        "32768": {
+          "accuracy": 0.3055555555555556,
+          "correct": 22,
+          "total": 72
+        },
+        "8192": {
+          "accuracy": 0.4722222222222222,
+          "correct": 34,
+          "total": 72
+        }
+      },
+      "by_task_kind": {
+        "conditional": {
+          "accuracy": 0.3888888888888889,
+          "correct": 28,
+          "total": 72
+        },
+        "multi_needle": {
+          "accuracy": 0.5,
+          "correct": 36,
+          "total": 72
+        },
+        "single_needle": {
+          "accuracy": 0.4583333333333333,
+          "correct": 33,
+          "total": 72
+        }
+      },
+      "correct": 97,
+      "mean_gold_logprob": -11.55685922193785,
+      "mean_gold_probability": 0.42671518133117803,
+      "mean_gold_rank": 2.125,
+      "total": 216
+    },
+    "C4_memory_w1": {
+      "accuracy": 0.44907407407407407,
+      "arm_id": "C4_memory_w1",
+      "by_context_length": {
+        "16384": {
+          "accuracy": 0.5694444444444444,
+          "correct": 41,
+          "total": 72
+        },
+        "32768": {
+          "accuracy": 0.3055555555555556,
+          "correct": 22,
+          "total": 72
+        },
+        "8192": {
+          "accuracy": 0.4722222222222222,
+          "correct": 34,
+          "total": 72
+        }
+      },
+      "by_task_kind": {
+        "conditional": {
+          "accuracy": 0.3888888888888889,
+          "correct": 28,
+          "total": 72
+        },
+        "multi_needle": {
+          "accuracy": 0.5,
+          "correct": 36,
+          "total": 72
+        },
+        "single_needle": {
+          "accuracy": 0.4583333333333333,
+          "correct": 33,
+          "total": 72
+        }
+      },
+      "correct": 97,
+      "mean_gold_logprob": -11.558876885623452,
+      "mean_gold_probability": 0.42637496668585895,
+      "mean_gold_rank": 2.1296296296296298,
+      "total": 216
+    }
+  },
+  "errors": [],
+  "near_candidate": 0.4722222222222222,
+  "near_control": 0.4722222222222222,
+  "near_degradation": 0.0,
+  "paired_far": {
+    "both_correct": 19,
+    "degraded": 0,
+    "improved": 3,
+    "mcnemar_p": 0.125,
+    "neither_correct": 50,
+    "pairs": 72
+  },
+  "paired_near": {
+    "both_correct": 33,
+    "degraded": 1,
+    "improved": 1,
+    "mcnemar_p": 0.75,
+    "neither_correct": 37,
+    "pairs": 72
+  },
+  "paired_w1": {
+    "both_correct": 22,
+    "degraded": 0,
+    "improved": 0,
+    "mcnemar_p": 1.0,
+    "neither_correct": 50,
+    "pairs": 72
+  },
+  "per_kind_far": {
+    "conditional": {
+      "candidate_accuracy": 0.125,
+      "control_accuracy": 0.125,
+      "control_total": 24,
+      "gain": 0.0
+    },
+    "multi_needle": {
+      "candidate_accuracy": 0.4583333333333333,
+      "control_accuracy": 0.375,
+      "control_total": 24,
+      "gain": 0.08333333333333331
+    },
+    "single_needle": {
+      "candidate_accuracy": 0.3333333333333333,
+      "control_accuracy": 0.2916666666666667,
+      "control_total": 24,
+      "gain": 0.04166666666666663
+    }
+  }
+}

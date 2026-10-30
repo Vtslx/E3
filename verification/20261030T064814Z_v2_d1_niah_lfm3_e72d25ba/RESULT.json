@@ -1,0 +1,84 @@
+{
+  "cases": [
+    {
+      "max_logit_diff": 0.0,
+      "prefill_decode_gap": 0.15625,
+      "seed": 0,
+      "tokens": 512,
+      "top1_rebuilt": 467,
+      "top1_reference": 467
+    },
+    {
+      "max_logit_diff": 0.0,
+      "prefill_decode_gap": 0.125,
+      "seed": 1,
+      "tokens": 512,
+      "top1_rebuilt": 10675,
+      "top1_reference": 10675
+    },
+    {
+      "max_logit_diff": 0.0,
+      "prefill_decode_gap": 0.1875,
+      "seed": 2,
+      "tokens": 512,
+      "top1_rebuilt": 8305,
+      "top1_reference": 8305
+    },
+    {
+      "max_logit_diff": 0.0,
+      "prefill_decode_gap": 0.125,
+      "seed": 3,
+      "tokens": 512,
+      "top1_rebuilt": 5439,
+      "top1_reference": 5439
+    }
+  ],
+  "checks": [
+    {
+      "detail": "length=2176 max_tensor_diff=0.0",
+      "name": "eviction_slices_byte_identical",
+      "passed": true
+    },
+    {
+      "detail": "length=2176 sink_diff=0.0",
+      "name": "online_stream_structure",
+      "passed": true
+    },
+    {
+      "detail": "budget=512 length=2688 sink_diff=0.0",
+      "name": "online_memory_structure",
+      "passed": true
+    },
+    {
+      "detail": 0.0,
+      "name": "no_eviction_kv_byte_identical",
+      "passed": true
+    },
+    {
+      "detail": {
+        "case_max": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "limit": 0.05,
+        "max": 0.0
+      },
+      "name": "logit_difference",
+      "passed": true
+    },
+    {
+      "detail": "4/4",
+      "name": "top1_agreement",
+      "passed": true
+    }
+  ],
+  "max_logit_diff": 0.0,
+  "prefill_decode_gap": 0.1875,
+  "schema_version": 1,
+  "status": "PASS",
+  "status_detail": "PASS",
+  "top1_agreement": 1.0,
+  "verdict": "PASS"
+}

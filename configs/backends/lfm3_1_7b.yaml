@@ -1,0 +1,75 @@
+# Backend-only config used by `sprm backend check`.
+name: lfm3_1_7b
+seed: 20261030
+
+backend:
+  kind: lfm3
+  model_path: /Users/yikewang/Model/LFM3/LFM3-1.7B
+  device: mps
+  dtype: bfloat16
+  attn_implementation: sdpa
+  trust_remote_code: true
+  local_files_only: true
+
+tier1:
+  sink_tokens: 128
+  window_tokens: 2048
+  prefill_chunk_tokens: 512
+
+tier2:
+  form: A
+  num_slots: 512
+  read_temperature: 8.0
+  write_gain: 0.05
+  gate: 0.5
+  forgetting: 0.99
+  trust_region_eps: 1.0e-3
+  key_l2_normalize: true
+  allocation: effective_rank
+  block_tokens: 512
+  kmeans_iters: 8
+  refine_passes: 2
+  condition_every_blocks: 8
+  min_slots_per_block: 1
+  max_slot_multiplier: 4.0
+
+runtime:
+  max_new_tokens: 16
+  long_decode_tokens: 64
+  deterministic: true
+  log_every_steps: 16
+  probe_tokens: 0
+
+tasks:
+  kinds: [single_needle]
+  context_lengths: [512]
+  samples_per_cell: 1
+  depths: [0.5]
+  filler_seed: 7101
+  needle_seed: 9107
+  use_chat_template: false
+  max_answer_tokens: 8
+  long_form_records: 4
+
+arms:
+  C0_full:
+    description: exact full KV
+    memory: false
+    writeback: false
+    compressed: false
+    allocation: none
+
+gates:
+  v2_max_logit_diff: 0.05
+  v2_min_top1_agreement: 1.0
+  d1_min_absolute_gain: 0.02
+  d1_min_tasks_improved: 2
+  d1_min_far_distance: 32768
+  d1_max_near_degradation: 0.0
+  d1_mcnemar_alpha: 0.10
+  d5_max_condition: 1.0e+6
+  d5_min_eta_ratio: 1.0
+
+archive:
+  root: /Volumes/Net/E3/verification
+  keep_artifacts: true
