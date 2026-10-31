@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="460" viewBox="0 0 820 460" font-family="Helvetica, Arial, sans-serif">
+<rect width="820" height="460" fill="#ffffff"/>
+<text x="78" y="26" font-size="17" font-weight="bold">32k far accuracy vs compression (LFM3-1.7B, attention allocation)</text>
+<text x="78" y="44" font-size="11" fill="#555">solid: measured resident bytes; dashed: logical bf16 / no W1-only buffers</text>
+<line x1="78.0" y1="52" x2="78.0" y2="396" stroke="#e4e4e4"/>
+<text x="78.0" y="416" font-size="11" text-anchor="middle">1x</text>
+<line x1="256.0" y1="52" x2="256.0" y2="396" stroke="#e4e4e4"/>
+<text x="256.0" y="416" font-size="11" text-anchor="middle">2x</text>
+<line x1="434.0" y1="52" x2="434.0" y2="396" stroke="#e4e4e4"/>
+<text x="434.0" y="416" font-size="11" text-anchor="middle">4x</text>
+<line x1="612.0" y1="52" x2="612.0" y2="396" stroke="#e4e4e4"/>
+<text x="612.0" y="416" font-size="11" text-anchor="middle">8x</text>
+<line x1="790.0" y1="52" x2="790.0" y2="396" stroke="#e4e4e4"/>
+<text x="790.0" y="416" font-size="11" text-anchor="middle">16x</text>
+<line x1="78" y1="396.0" x2="790" y2="396.0" stroke="#e4e4e4"/>
+<text x="68" y="400.0" font-size="11" text-anchor="end">0%</text>
+<line x1="78" y1="310.0" x2="790" y2="310.0" stroke="#e4e4e4"/>
+<text x="68" y="314.0" font-size="11" text-anchor="end">25%</text>
+<line x1="78" y1="224.0" x2="790" y2="224.0" stroke="#e4e4e4"/>
+<text x="68" y="228.0" font-size="11" text-anchor="end">50%</text>
+<line x1="78" y1="138.0" x2="790" y2="138.0" stroke="#e4e4e4"/>
+<text x="68" y="142.0" font-size="11" text-anchor="end">75%</text>
+<line x1="78" y1="52.0" x2="790" y2="52.0" stroke="#e4e4e4"/>
+<text x="68" y="56.0" font-size="11" text-anchor="end">100%</text>
+<line x1="78" y1="396" x2="790" y2="396" stroke="#333"/>
+<line x1="78" y1="52" x2="78" y2="396" stroke="#333"/>
+<text x="434.0" y="442" font-size="12" text-anchor="middle">compression vs exact full KV (log scale)</text>
+<text x="18" y="224.0" font-size="12" text-anchor="middle" transform="rotate(-90 18 224.0)">32k far accuracy</text>
+<line x1="78" y1="305.2" x2="790" y2="305.2" stroke="#999" stroke-dasharray="2,4"/>
+<text x="84" y="299.2" font-size="10" fill="#777">C1 streaming 26.4%</text>
+<circle cx="78.0" cy="71.1" r="5" fill="#222"/>
+<text x="86.0" y="63.1" font-size="10">C0 exact 94.4%</text>
+<polyline points="289.2,157.1 401.1,257.4 483.0,300.4" fill="none" stroke="#1f5fbf" stroke-width="2" stroke-dasharray="0"/>
+<circle cx="289.2" cy="157.1" r="4" fill="#1f5fbf"/>
+<text x="296.2" y="149.1" font-size="10" fill="#1f5fbf">2048 slots</text>
+<circle cx="401.1" cy="257.4" r="4" fill="#1f5fbf"/>
+<text x="408.1" y="249.4" font-size="10" fill="#1f5fbf">1024 slots</text>
+<circle cx="483.0" cy="300.4" r="4" fill="#1f5fbf"/>
+<text x="490.0" y="292.4" font-size="10" fill="#1f5fbf">512 slots</text>
+<polyline points="590.6,157.1 657.1,257.4 698.1,300.4" fill="none" stroke="#1f8f4e" stroke-width="2" stroke-dasharray="5,4"/>
+<circle cx="590.6" cy="157.1" r="4" fill="#1f8f4e"/>
+<text x="597.6" y="149.1" font-size="10" fill="#1f8f4e">2048 slots</text>
+<circle cx="657.1" cy="257.4" r="4" fill="#1f8f4e"/>
+<text x="664.1" y="249.4" font-size="10" fill="#1f8f4e">1024 slots</text>
+<circle cx="698.1" cy="300.4" r="4" fill="#1f8f4e"/>
+<text x="705.1" y="292.4" font-size="10" fill="#1f8f4e">512 slots</text>
+</svg>

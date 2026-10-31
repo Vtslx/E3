@@ -156,6 +156,14 @@ class Tier2Config:
     condition_every_blocks: int
     min_slots_per_block: int
     max_slot_multiplier: float
+    anchor_interval: int = 64
+    anchor_blend: float = 0.01
+    replay_blocks: int = 2
+    replay_interval: int = 32
+    eta_adapt_interval: int = 16
+    eta_min: float = 0.005
+    eta_max: float = 0.2
+    eta_adapt_rate: float = 0.05
 
     @classmethod
     def from_dict(cls, raw: Any, where: str = "tier2") -> Tier2Config:
@@ -178,6 +186,14 @@ class Tier2Config:
                 "condition_every_blocks",
                 "min_slots_per_block",
                 "max_slot_multiplier",
+                "anchor_interval",
+                "anchor_blend",
+                "replay_blocks",
+                "replay_interval",
+                "eta_adapt_interval",
+                "eta_min",
+                "eta_max",
+                "eta_adapt_rate",
             },
             where,
         )
@@ -187,6 +203,10 @@ class Tier2Config:
         allocation = _str(d.get("allocation"), f"{where}.allocation")
         if allocation not in {"none", "uniform", "effective_rank", "attention"}:
             raise ConfigError(f"{where}.allocation is invalid: {allocation!r}")
+        eta_min = _float(d.get("eta_min", 0.005), f"{where}.eta_min", minimum=0.0, maximum=1.0)
+        eta_max = _float(d.get("eta_max", 0.2), f"{where}.eta_max", minimum=0.0, maximum=1.0)
+        if eta_min > eta_max:
+            raise ConfigError(f"{where}: eta_min ({eta_min}) must be <= eta_max ({eta_max})")
         return cls(
             form=form,  # type: ignore[arg-type]
             num_slots=_int(d.get("num_slots"), f"{where}.num_slots", minimum=1),
@@ -206,6 +226,26 @@ class Tier2Config:
             min_slots_per_block=_int(d.get("min_slots_per_block"), f"{where}.min_slots_per_block", minimum=0),
             max_slot_multiplier=_float(
                 d.get("max_slot_multiplier"), f"{where}.max_slot_multiplier", minimum=1.0
+            ),
+            anchor_interval=_int(
+                d.get("anchor_interval", 64), f"{where}.anchor_interval", minimum=1
+            ),
+            anchor_blend=_float(
+                d.get("anchor_blend", 0.01), f"{where}.anchor_blend", minimum=0.0, maximum=1.0
+            ),
+            replay_blocks=_int(
+                d.get("replay_blocks", 2), f"{where}.replay_blocks", minimum=0
+            ),
+            replay_interval=_int(
+                d.get("replay_interval", 32), f"{where}.replay_interval", minimum=1
+            ),
+            eta_adapt_interval=_int(
+                d.get("eta_adapt_interval", 16), f"{where}.eta_adapt_interval", minimum=1
+            ),
+            eta_min=eta_min,
+            eta_max=eta_max,
+            eta_adapt_rate=_float(
+                d.get("eta_adapt_rate", 0.05), f"{where}.eta_adapt_rate", minimum=0.0, maximum=2.0
             ),
         )
 

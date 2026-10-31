@@ -118,6 +118,44 @@ class CacheController:
         if len(set(lengths.values())) != 1:
             raise CacheInvariantError(f"rebuilt global layers have different lengths: {lengths}")
 
+    # ------------------------------------------------------------------ speculation
+    def snapshot_conv(self) -> dict[int, torch.Tensor]:
+        """Snapshot the short-conv states before a speculative forward."""
+        snapshot: dict[int, torch.Tensor] = {}
+        for layer_idx in self.info.conv_layers:
+            states = getattr(self.layers[layer_idx], "conv_states", None)
+            if states and states[0] is not None:
+                snapshot[layer_idx] = states[0].clone()
+        return snapshot
+
+    def restore_conv(self, snapshot: dict[int, torch.Tensor]) -> None:
+        for layer_idx, state in snapshot.items():
+            self.layers[layer_idx].conv_states[0].copy_(state)
+
+    def activate_sliding_past(self) -> None:
+        """Keep the speculative tokens in sliding layers so they can be cropped."""
+        for layer_idx in self.info.sliding_layers:
+            layer = self.layers[layer_idx]
+            if getattr(layer, "is_initialized", False):
+                layer.activate_past_recording()
+
+    def crop_tail(self, count: int) -> None:
+        """Remove the last ``count`` tokens from global and sliding layers."""
+        if count <= 0:
+            return
+        for layer_idx in list(self.info.global_layers) + list(self.info.sliding_layers):
+            layer = self.layers[layer_idx]
+            if getattr(layer, "is_initialized", False):
+                layer.crop(-count)
+
+    def finish_speculation(self) -> None:
+        """Restore normal sliding-window bookkeeping after a speculative forward."""
+        for layer_idx in self.info.sliding_layers:
+            layer = self.layers[layer_idx]
+            if getattr(layer, "record_past", False):
+                layer.crop(0)
+                layer.record_past = False
+
     # ------------------------------------------------------------------ validation
     def assert_invariants(self, *, expected_global_length: int | None = None) -> None:
         if expected_global_length is not None:

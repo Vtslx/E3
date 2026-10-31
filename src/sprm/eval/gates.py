@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import math
 import tempfile
+import time
 import traceback
 from collections.abc import Sequence
 from dataclasses import dataclass, field
@@ -17,7 +18,7 @@ from typing import Any
 
 import torch
 
-from sprm.backends.lfm3.backend import Lfm3Backend
+from sprm.backends.lfm3.backend import Lfm3Backend, QueryProbe
 from sprm.config.schema import ExperimentConfig
 from sprm.contracts.types import KVSlice
 from sprm.errors import ConfigError, GateFailure, VerificationError
@@ -34,6 +35,7 @@ from sprm.runtime.form_a import (
     exact_window_from_cache,
     prefill_online,
 )
+from sprm.runtime.speculative import PromptLookup, decode_speculative
 from sprm.verification.archive import RunArchive, verify_run
 
 
@@ -677,12 +679,39 @@ def gate_d5(
     rows: list[dict[str, Any]] = []
     for sample in samples:
         prompt = sample_prompt_token_ids(sample)
+        sink = experiment.tier1.sink_tokens
+        window_tokens = experiment.tier1.window_tokens
+        block = experiment.tier2.block_tokens
+        evict_end = len(prompt) - window_tokens
+        ranges = (
+            [(start, min(start + block, evict_end)) for start in range(sink, evict_end, block)]
+            if evict_end > sink
+            else []
+        )
+        probe = QueryProbe(backend, backend.info.global_layers, len(sample.question_token_ids))
+        try:
+            exact_cache, _, _ = backend.prefill_exact(
+                prompt, chunk_tokens=experiment.tier1.prefill_chunk_tokens
+            )
+        finally:
+            probe.detach()
+        importances = (
+            backend.block_attention_importances(exact_cache, ranges, probe.queries())
+            if ranges
+            else None
+        )
+        del exact_cache
+        allocation = experiment.arms[arm_id].allocation
+        if allocation == "attention" and not importances:
+            allocation = "uniform"
+            importances = None
         prefill = prefill_online(
             backend,
             experiment,
             prompt,
             use_memory=True,
-            allocation=experiment.arms[arm_id].allocation,
+            allocation=allocation,
+            importances=importances,
         )
         if prefill.build is None:
             raise VerificationError(f"D5 sample {sample.sample_id} did not evict; no memory to stress")
@@ -707,11 +736,17 @@ def gate_d5(
             eostoken_id=None,
         )
         recon = [float(value) for value in outcome.recon_error_trajectory if math.isfinite(float(value))]
+        recon_gen = [
+            float(value) for value in outcome.recon_error_generated if math.isfinite(float(value))
+        ]
         if len(recon) < 2:
             raise VerificationError(f"D5 sample {sample.sample_id} produced fewer than two reconstruction probes")
         head = sum(recon[:5]) / len(recon[:5])
         tail = sum(recon[-5:]) / len(recon[-5:])
         shrinkage = head / tail if tail > 0 else float("nan")
+        gen_head = sum(recon_gen[:5]) / len(recon_gen[:5]) if recon_gen else float("nan")
+        gen_tail = sum(recon_gen[-5:]) / len(recon_gen[-5:]) if recon_gen else float("nan")
+        gen_shrinkage = gen_head / gen_tail if gen_tail and gen_tail > 0 else float("nan")
         rows.append(
             {
                 "sample_id": sample.sample_id,
@@ -720,14 +755,26 @@ def gate_d5(
                 "recon_head": head,
                 "recon_tail": tail,
                 "shrinkage_ratio": shrinkage,
+                "generated_recon_head": gen_head,
+                "generated_recon_tail": gen_tail,
+                "generated_shrinkage_ratio": gen_shrinkage,
                 "condition_number": float(outcome.condition_final),
                 "trust_scaled_count": int(outcome.trust_scaled_count),
                 "writes": int(sum(memory.stats.writes for memory in build.memories.values())),
+                "anchor_updates": float(
+                    sum(memory.stats.extra.get("anchor_updates", 0.0) for memory in build.memories.values())
+                ),
+                "replay_events": float(
+                    sum(memory.stats.extra.get("replay_events", 0.0) for memory in build.memories.values())
+                ),
+                "eta_final": float(outcome.eta_final),
+                "eta_ratio": float(outcome.eta_final / max(experiment.tier2.write_gain, 1.0e-12)),
                 "recon_trajectory": recon,
             }
         )
     max_condition = max(row["condition_number"] for row in rows)
     min_shrinkage = min(row["shrinkage_ratio"] for row in rows)
+    min_generated_shrinkage = min(row["generated_shrinkage_ratio"] for row in rows)
     checks = [
         Check(
             "condition_bounded",
@@ -735,15 +782,23 @@ def gate_d5(
             {"max": max_condition, "limit": experiment.gates.d5_max_condition},
         ),
         Check(
-            "window_shrinkage",
-            math.isfinite(min_shrinkage) and min_shrinkage >= experiment.gates.d5_min_eta_ratio,
-            {"min": min_shrinkage, "limit": experiment.gates.d5_min_eta_ratio},
+            "writeback_shrinkage",
+            math.isfinite(min_generated_shrinkage)
+            and min_generated_shrinkage >= experiment.gates.d5_min_eta_ratio,
+            {"min": min_generated_shrinkage, "limit": experiment.gates.d5_min_eta_ratio},
         ),
         Check(
             "decode_completed",
             all(row["decoded_tokens"] >= decode_tokens for row in rows),
             {row["sample_id"]: row["decoded_tokens"] for row in rows},
         ),
+    ]
+    diagnostics = [
+        Check(
+            "full_window_shrinkage_diagnostic",
+            math.isfinite(min_shrinkage) and min_shrinkage >= experiment.gates.d5_min_eta_ratio,
+            {"min": min_shrinkage, "limit": experiment.gates.d5_min_eta_ratio},
+        )
     ]
     if archive is not None:
         archive.write_json("artifacts/rows.json", rows)
@@ -752,14 +807,15 @@ def gate_d5(
     passed = _all_pass(checks)
     status = "PASS" if passed else "FAIL"
     table = [
-        "| sample | decoded | recon head | recon tail | shrinkage | max cond | trust scaled | writes |",
-        "|--------|---------|------------|------------|-----------|----------|--------------|--------|",
+        "| sample | decoded | full shrink | W1 shrink | eta ratio | max cond | trust | writes | anchors | replays |",
+        "|--------|---------|-------------|-----------|-----------|----------|-------|--------|---------|---------|",
     ]
     for row in rows:
         table.append(
-            f"| {row['sample_id']} | {row['decoded_tokens']} | {_fmt(row['recon_head'])} "
-            f"| {_fmt(row['recon_tail'])} | {_fmt(row['shrinkage_ratio'])} "
-            f"| {_fmt(row['condition_number'])} | {row['trust_scaled_count']} | {row['writes']} |"
+            f"| {row['sample_id']} | {row['decoded_tokens']} | {_fmt(row['shrinkage_ratio'])} "
+            f"| {_fmt(row['generated_shrinkage_ratio'])} | {_fmt(row['eta_ratio'])} "
+            f"| {_fmt(row['condition_number'])} | {row['trust_scaled_count']} | {row['writes']} "
+            f"| {_fmt(row['anchor_updates'], 0)} | {_fmt(row['replay_events'], 0)} |"
         )
     report = "\n".join(
         [
@@ -771,19 +827,25 @@ def gate_d5(
             "",
             _check_table(checks),
             "",
-            f"Verdict: **{status}**. Condition `inf` means the key matrix is rank-deficient; it is a",
-            "stability finding, not a numerical blow-up. Anchors, replay, and eta adaptation are not",
-            "implemented and are not tested here.",
+            "Diagnostic (not gating):",
+            "",
+            _check_table(diagnostics),
+            "",
+            f"Verdict: **{status}**. The gating shrinkage uses the generated-token window, the part W1",
+            "actually writes. The full-window shrinkage is diagnostic: most of that window is prefill",
+            "KV that W1 never wrote. Anchors, bounded replay, and eta adaptation are implemented and",
+            "reported above.",
         ]
     )
     claims = (
         "# Claims for D5\n\n"
-        "Establishes: over a long W1 decode with the implemented trust region and slot refresh,\n"
-        "whether the key-matrix condition stays below the configured bound and whether the exact\n"
-        "window reconstruction error shrinks rather than grows. `d5_min_eta_ratio` is used as the\n"
-        "minimum head/tail shrinkage ratio because eta adaptation is not implemented.\n\n"
-        "Does not establish: anchor/replay stability, adaptive-eta behaviour, distribution\n"
-        "equivalence, or long-text task accuracy.\n"
+        "Establishes: over a long W1 decode with the implemented trust region, anchors, bounded\n"
+        "replay, eta adaptation, and slot refresh, whether (1) the key-matrix condition stays\n"
+        "below the configured bound and (2) the generated-token reconstruction error shrinks.\n"
+        "The full-window shrinkage is reported separately as a diagnostic because the prefill\n"
+        "window is Tier-1 exact and was never W1-written.\n\n"
+        "Does not establish: distribution equivalence, long-text task accuracy, or a learned\n"
+        "memory representation.\n"
     )
     logger.info("d5_summary", verdict=status, max_condition=max_condition, min_shrinkage=min_shrinkage)
     return GateOutcome(
@@ -795,6 +857,188 @@ def gate_d5(
             "rows": rows,
             "max_condition": max_condition,
             "min_shrinkage_ratio": min_shrinkage,
+            "min_generated_shrinkage_ratio": min_generated_shrinkage,
+            "checks": [check.as_dict() for check in checks],
+            "diagnostics": [check.as_dict() for check in diagnostics],
+        },
+        report=report,
+        claims=claims,
+        checks=checks,
+        model_info=backend.info.as_dict() | {"file_hashes": backend.file_hashes()},
+    )
+
+
+# ====================================================================== S1
+def gate_s1(
+    backend: Lfm3Backend,
+    experiment: ExperimentConfig,
+    logger: JsonLogger,
+    *,
+    archive: RunArchive | None = None,
+    max_new_tokens: int = 32,
+    gamma: int = 4,
+    ngram: int = 3,
+) -> GateOutcome:
+    """Prompt-lookup speculative decoding: acceptance and tokens/s on the exact arm.
+
+    The output must be token-for-token identical to greedy decoding; a speedup is only
+    claimed when that holds. The prompt is a repeated sentence, which gives the draft real
+    n-gram matches; that is a mechanism test, not a general-task acceptance estimate.
+    """
+    if max_new_tokens < 1 or gamma < 1 or ngram < 1:
+        raise ConfigError("S1 needs positive max_new_tokens, gamma, and ngram")
+    sentence = " The archive room is quiet and the shelves are labelled by year."
+    prompt: list[int] = []
+    while len(prompt) < 2048:
+        prompt.extend(backend.tokenize(sentence))
+    prompt = prompt[:2048]
+    cache, logits, _ = backend.prefill_exact(
+        prompt, chunk_tokens=experiment.tier1.prefill_chunk_tokens
+    )
+    arm = experiment.arms["C0_full"]
+
+    baseline_cache = cache.clone()
+    baseline_window = exact_window_from_cache(
+        backend,
+        baseline_cache,
+        capacity=experiment.tier1.window_tokens,
+        full_length=len(prompt),
+    )
+    t0 = time.perf_counter()
+    baseline = decode_arm(
+        backend,
+        baseline_cache,
+        experiment,
+        arm,
+        first_logits=logits,
+        start_position=len(prompt),
+        max_new_tokens=max_new_tokens,
+        exact_window=baseline_window,
+        build=None,
+        eostoken_id=None,
+    )
+    baseline_s = time.perf_counter() - t0
+    baseline_ids = [step.token_id for step in baseline.steps]
+
+    speculative_cache = cache.clone()
+    speculative_window = exact_window_from_cache(
+        backend,
+        speculative_cache,
+        capacity=experiment.tier1.window_tokens,
+        full_length=len(prompt),
+    )
+    proposer = PromptLookup(prompt, n=ngram, gamma=gamma)
+    t0 = time.perf_counter()
+    speculative = decode_speculative(
+        backend,
+        speculative_cache,
+        experiment,
+        arm,
+        first_logits=logits,
+        start_position=len(prompt),
+        max_new_tokens=max_new_tokens,
+        exact_window=speculative_window,
+        build=None,
+        eostoken_id=None,
+        proposer=proposer,
+    )
+    speculative_s = time.perf_counter() - t0
+
+    baseline_tps = len(baseline_ids) / baseline_s if baseline_s > 0 else float("nan")
+    speculative_tps = (
+        len(speculative.generated) / speculative_s if speculative_s > 0 else float("nan")
+    )
+    speedup = speculative_tps / baseline_tps if baseline_tps > 0 else float("nan")
+    output_match = baseline_ids == speculative.generated
+    acceptance = (
+        speculative.accepted_tokens / speculative.proposed_tokens
+        if speculative.proposed_tokens
+        else float("nan")
+    )
+    checks = [
+        Check("output_matches_greedy", output_match, f"{len(baseline_ids)} tokens"),
+        Check(
+            "speedup",
+            math.isfinite(speedup) and speedup > 1.0,
+            {"speedup": speedup, "baseline_tps": baseline_tps, "speculative_tps": speculative_tps},
+        ),
+        Check("draft_acceptance", speculative.proposed_tokens > 0, acceptance),
+    ]
+    if archive is not None:
+        archive.write_json(
+            "artifacts/summary.json",
+            {
+                "prompt_tokens": len(prompt),
+                "max_new_tokens": max_new_tokens,
+                "gamma": gamma,
+                "ngram": ngram,
+                "baseline_seconds": baseline_s,
+                "speculative_seconds": speculative_s,
+                "baseline_tokens_per_s": baseline_tps,
+                "speculative_tokens_per_s": speculative_tps,
+                "speedup": speedup,
+                "output_match": output_match,
+                "proposed_tokens": speculative.proposed_tokens,
+                "accepted_tokens": speculative.accepted_tokens,
+                "full_accepts": speculative.full_accepts,
+                "verify_calls": speculative.verify_calls,
+                "fallback_calls": speculative.fallback_calls,
+                "baseline_ids": baseline_ids,
+                "speculative_ids": speculative.generated,
+            },
+        )
+        archive.write_json("artifacts/checks.json", [check.as_dict() for check in checks])
+    logger.info("s1_checks", checks=[check.as_dict() for check in checks])
+    passed = _all_pass(checks)
+    status = "PASS" if passed else "FAIL"
+    report = "\n".join(
+        [
+            "# S1 prompt-lookup speculative decoding",
+            "",
+            f"Prompt: {len(prompt)} tokens; decode budget: {max_new_tokens}; gamma={gamma}, ngram={ngram}.",
+            "Arm: `C0_full` (exact KV; the memory arm is not a speed lever).",
+            "",
+            "| run | seconds | tokens/s |",
+            "|-----|---------|----------|",
+            f"| greedy | {_fmt(baseline_s)} | {_fmt(baseline_tps)} |",
+            f"| speculative | {_fmt(speculative_s)} | {_fmt(speculative_tps)} |",
+            "",
+            f"- speedup: **{_fmt(speedup)}x**",
+            f"- output identical to greedy: **{output_match}**",
+            f"- proposed {speculative.proposed_tokens}, accepted {speculative.accepted_tokens}, "
+            f"full accepts {speculative.full_accepts}, verify calls {speculative.verify_calls}, "
+            f"fallbacks {speculative.fallback_calls}",
+            "",
+            _check_table(checks),
+            "",
+            f"Verdict: **{status}**.",
+        ]
+    )
+    claims = (
+        "# Claims for S1\n\n"
+        "Establishes: on a repeated-sentence prompt, prompt-lookup drafts with the stated\n"
+        "acceptance, the speculative output is token-identical to greedy decoding, and the\n"
+        "measured tokens/s is compared on the same exact-KV arm. The all-or-nothing commit\n"
+        "rolls back global/sliding KV and restores conv state on rejection.\n\n"
+        "Does not establish: general-task acceptance, memory-arm speedup, batch>1 throughput,\n"
+        "or a claim that compression itself accelerates generation.\n"
+    )
+    return GateOutcome(
+        gate="s1",
+        status=status,
+        verdict=f"{status}: speedup {_fmt(speedup)}x, match={output_match}, acceptance={_fmt(acceptance)}",
+        result={
+            "status_detail": status,
+            "baseline_tokens_per_s": baseline_tps,
+            "speculative_tokens_per_s": speculative_tps,
+            "speedup": speedup,
+            "output_match": output_match,
+            "acceptance": acceptance,
+            "proposed_tokens": speculative.proposed_tokens,
+            "accepted_tokens": speculative.accepted_tokens,
+            "full_accepts": speculative.full_accepts,
+            "verify_calls": speculative.verify_calls,
+            "fallback_calls": speculative.fallback_calls,
             "checks": [check.as_dict() for check in checks],
         },
         report=report,
@@ -848,6 +1092,97 @@ def _accuracy_rows(runs: Sequence[SampleRun], arm_id: str, predicate: Any) -> li
     ]
 
 
+def _effect_stats(
+    runs: Sequence[SampleRun],
+    *,
+    control: str,
+    candidate: str,
+    far_distance: int,
+    near_distance: int,
+    min_gain: float,
+    min_kinds: int,
+    max_near_degradation: float,
+    alpha: float,
+    prefix: str,
+) -> dict[str, Any]:
+    """Paired far/near statistics for one causal contrast."""
+
+    far_runs = [run for run in runs if run.sample.context_length >= far_distance]
+    near_runs = [run for run in runs if run.sample.context_length <= near_distance]
+
+    def acc(arm_id: str, rows: Sequence[SampleRun]) -> float:
+        usable = [run for run in rows if arm_id in run.arms and run.arms[arm_id].error is None]
+        if not usable:
+            return float("nan")
+        return sum(1 for run in usable if run.arms[arm_id].result.exact_match) / len(usable)
+
+    kinds = sorted({run.sample.task_kind for run in far_runs})
+    per_kind: dict[str, dict[str, Any]] = {}
+    for kind in kinds:
+        rows = [run for run in far_runs if run.sample.task_kind == kind]
+        control_accuracy = acc(control, rows)
+        candidate_accuracy = acc(candidate, rows)
+        per_kind[kind] = {
+            "control_accuracy": control_accuracy,
+            "candidate_accuracy": candidate_accuracy,
+            "gain": candidate_accuracy - control_accuracy,
+            "control_total": len(
+                [run for run in rows if control in run.arms and run.arms[control].error is None]
+            ),
+        }
+    kinds_improved = sum(
+        1 for stats in per_kind.values() if stats["gain"] >= min_gain
+    )
+    near_control = acc(control, near_runs)
+    near_candidate = acc(candidate, near_runs)
+    near_degradation = (
+        near_control - near_candidate
+        if not (math.isnan(near_control) or math.isnan(near_candidate))
+        else float("nan")
+    )
+    paired_far = _paired(far_runs, control, candidate)
+    paired_near = _paired(near_runs, control, candidate)
+    pooled_control = acc(control, far_runs)
+    pooled_candidate = acc(candidate, far_runs)
+    checks = [
+        Check(f"{prefix}_far_bucket", len(far_runs) > 0, len(far_runs)),
+        Check(
+            f"{prefix}_kinds_improved",
+            kinds_improved >= min_kinds,
+            f"{kinds_improved}/{len(kinds)}",
+        ),
+        Check(
+            f"{prefix}_near_degradation",
+            (not math.isnan(near_degradation)) and near_degradation <= max_near_degradation,
+            near_degradation,
+        ),
+        Check(
+            f"{prefix}_mcnemar",
+            paired_far["mcnemar_p"] <= alpha,
+            paired_far["mcnemar_p"],
+        ),
+    ]
+    return {
+        "control": control,
+        "candidate": candidate,
+        "per_kind": per_kind,
+        "kinds_improved": kinds_improved,
+        "near_control": near_control,
+        "near_candidate": near_candidate,
+        "near_degradation": near_degradation,
+        "paired_far": paired_far,
+        "paired_near": paired_near,
+        "pooled_control": pooled_control,
+        "pooled_candidate": pooled_candidate,
+        "pooled_gain": (
+            pooled_candidate - pooled_control
+            if not (math.isnan(pooled_candidate) or math.isnan(pooled_control))
+            else float("nan")
+        ),
+        "checks": checks,
+    }
+
+
 def gate_d1(
     backend: Lfm3Backend,
     experiment: ExperimentConfig,
@@ -858,7 +1193,11 @@ def gate_d1(
     archive: RunArchive | None = None,
     max_new_tokens: int | None = None,
 ) -> GateOutcome:
-    """D1: does memory beat streaming at the far distance bucket?"""
+    """D1 attribution: memory (C3 vs C1) and writeback (C4 vs C3) are separate.
+
+    C4 vs C1 is reported as a combined diagnostic but never gates: it cannot say whether a
+    gain came from the memory slots or from the writeback.
+    """
     runs = run_experiment(
         backend,
         experiment,
@@ -871,86 +1210,59 @@ def gate_d1(
     by_arm = {arm_id: summarize_accuracy(runs, arm_id) for arm_id in arm_ids}
     far_distance = experiment.gates.d1_min_far_distance
     near_distance = min(experiment.tasks.context_lengths)
-    far_runs = [run for run in runs if run.sample.context_length >= far_distance]
-    near_runs = [run for run in runs if run.sample.context_length <= near_distance]
-
-    def acc(arm_id: str, rows: Sequence[SampleRun]) -> float:
-        usable = [run for run in rows if arm_id in run.arms and run.arms[arm_id].error is None]
-        if not usable:
-            return float("nan")
-        return sum(1 for run in usable if run.arms[arm_id].result.exact_match) / len(usable)
-
-    control = "C1_stream"
-    candidate = "C4_memory_w1"
-    kinds = sorted({run.sample.task_kind for run in far_runs})
-    per_kind: dict[str, dict[str, Any]] = {}
-    for kind in kinds:
-        rows = [run for run in far_runs if run.sample.task_kind == kind]
-        control_acc = acc(control, rows)
-        candidate_acc = acc(candidate, rows)
-        per_kind[kind] = {
-            "control_accuracy": control_acc,
-            "candidate_accuracy": candidate_acc,
-            "gain": candidate_acc - control_acc,
-            "control_total": len([r for r in rows if control in r.arms and r.arms[control].error is None]),
-        }
-    kinds_improved = sum(
-        1 for stats in per_kind.values() if stats["gain"] >= experiment.gates.d1_min_absolute_gain
+    common: dict[str, Any] = {
+        "far_distance": far_distance,
+        "near_distance": near_distance,
+        "min_gain": experiment.gates.d1_min_absolute_gain,
+        "min_kinds": experiment.gates.d1_min_tasks_improved,
+        "max_near_degradation": experiment.gates.d1_max_near_degradation,
+        "alpha": experiment.gates.d1_mcnemar_alpha,
+    }
+    memory = _effect_stats(
+        runs, control="C1_stream", candidate="C3_memory", prefix="memory", **common
     )
-    near_control = acc(control, near_runs)
-    near_candidate = acc(candidate, near_runs)
-    near_degradation = near_control - near_candidate if not (math.isnan(near_control) or math.isnan(near_candidate)) else float("nan")
-    paired_far = _paired(far_runs, control, candidate)
-    paired_near = _paired(near_runs, control, candidate)
-    paired_w1 = _paired(far_runs, "C3_memory", candidate)
-
-    checks = [
-        Check("far_bucket_present", len(far_runs) > 0, len(far_runs)),
-        Check(
-            "kinds_improved",
-            kinds_improved >= experiment.gates.d1_min_tasks_improved,
-            f"{kinds_improved}/{len(kinds)}",
-        ),
-        Check(
-            "near_degradation",
-            (not math.isnan(near_degradation))
-            and near_degradation <= experiment.gates.d1_max_near_degradation,
-            near_degradation,
-        ),
-        Check(
-            "far_mcnemar",
-            paired_far["mcnemar_p"] <= experiment.gates.d1_mcnemar_alpha,
-            paired_far["mcnemar_p"],
-        ),
-    ]
+    writeback = _effect_stats(
+        runs, control="C3_memory", candidate="C4_memory_w1", prefix="writeback", **common
+    )
+    combined = _effect_stats(
+        runs, control="C1_stream", candidate="C4_memory_w1", prefix="combined", **common
+    )
+    checks = memory["checks"] + writeback["checks"]
     passed = _all_pass(checks)
     status = "PASS" if passed else "FAIL"
-    pooled_far_control = acc(control, far_runs)
-    pooled_far_candidate = acc(candidate, far_runs)
     verdict = (
-        f"{status}: {candidate} vs {control} at >={far_distance} tokens "
-        f"({_fmt(pooled_far_candidate - pooled_far_control if not math.isnan(pooled_far_candidate) else float('nan'))} "
-        f"pooled gain, {kinds_improved}/{len(kinds)} kinds improved, McNemar p={_fmt(paired_far['mcnemar_p'])})"
+        f"{status}: memory C3-C1 far {_fmt(float(memory['pooled_gain']))} "
+        f"({memory['kinds_improved']}/{len(memory['per_kind'])} kinds, "
+        f"p={_fmt(float(memory['paired_far']['mcnemar_p']))}); "
+        f"writeback C4-C3 far {_fmt(float(writeback['pooled_gain']))} "
+        f"({writeback['kinds_improved']}/{len(writeback['per_kind'])} kinds, "
+        f"p={_fmt(float(writeback['paired_far']['mcnemar_p']))})"
     )
 
-    # Markdown tables.
-    table_lines = ["| arm | overall | 8k | 16k | 32k |", "|-----|---------|----|----|----|"]
+    accuracy_lines = ["| arm | overall | 8k | 16k | 32k |", "|-----|---------|----|----|----|"]
     for arm_id in arm_ids:
         stats = by_arm[arm_id]
         by_len = stats["by_context_length"]
-        cells = [
-            _fmt(float(stats["accuracy"])),
-            _fmt(float(by_len.get("8192", {}).get("accuracy", float("nan")))),
-            _fmt(float(by_len.get("16384", {}).get("accuracy", float("nan")))),
-            _fmt(float(by_len.get("32768", {}).get("accuracy", float("nan")))),
-        ]
-        table_lines.append(f"| {arm_id} | " + " | ".join(cells) + " |")
-    kind_lines = [f"| kind | {control} | {candidate} | gain |", "|------|-----------|--------------|------|"]
-    for kind, stats in per_kind.items():
-        kind_lines.append(
-            f"| {kind} | {_fmt(stats['control_accuracy'])} | {_fmt(stats['candidate_accuracy'])} "
-            f"| {_fmt(stats['gain'])} |"
+        accuracy_lines.append(
+            f"| {arm_id} | {_fmt(float(stats['accuracy']))} "
+            f"| {_fmt(float(by_len.get('8192', {}).get('accuracy', float('nan'))))} "
+            f"| {_fmt(float(by_len.get('16384', {}).get('accuracy', float('nan'))))} "
+            f"| {_fmt(float(by_len.get('32768', {}).get('accuracy', float('nan'))))} |"
         )
+
+    def kind_table(effect: dict[str, Any], label: str) -> list[str]:
+        lines = [
+            f"| kind | {label} control | {label} candidate | gain |",
+            "|------|-----------------|--------------------|------|",
+        ]
+        for kind, stats in effect["per_kind"].items():
+            lines.append(
+                f"| {kind} | {_fmt(float(stats['control_accuracy']))} "
+                f"| {_fmt(float(stats['candidate_accuracy']))} "
+                f"| {_fmt(float(stats['gain']))} |"
+            )
+        return lines
+
     likelihood_lines = [
         "| arm | mean gold logprob | mean gold probability | mean gold rank |",
         "|-----|-------------------|-----------------------|----------------|",
@@ -962,6 +1274,7 @@ def gate_d1(
             f"| {_fmt(float(stats['mean_gold_probability']))} "
             f"| {_fmt(float(stats['mean_gold_rank']), 2)} |"
         )
+
     stability_lines = [
         "| arm | recon final | max cond | trust scaled | memory KiB | KV B/token |",
         "|-----|-------------|----------|--------------|------------|------------|",
@@ -972,17 +1285,18 @@ def gate_d1(
             stability_lines.append(f"| {arm_id} | n/a | n/a | n/a | n/a | n/a |")
             continue
         recon = [run.arms[arm_id].result.recon_error_final for run in usable]
-        recon = [x for x in recon if not math.isnan(x)]
-        conds = [run.arms[arm_id].result.condition_number_final for run in usable]
-        conds = [x for x in conds if not math.isnan(x)]
+        recon = [value for value in recon if not math.isnan(value)]
+        conditions = [run.arms[arm_id].result.condition_number_final for run in usable]
+        conditions = [value for value in conditions if not math.isnan(value)]
         trust = sum(run.arms[arm_id].result.trust_scaled_count for run in usable)
-        mem = sum(run.arms[arm_id].result.memory_bytes for run in usable) / max(len(usable), 1) / 1024
+        memory_kib = sum(run.arms[arm_id].result.memory_bytes for run in usable) / max(len(usable), 1) / 1024
         kv = [run.arms[arm_id].result.kv_bytes_per_token for run in usable]
         stability_lines.append(
             f"| {arm_id} | {_fmt(max(recon) if recon else float('nan'))} "
-            f"| {_fmt(max(conds) if conds else float('nan'))} | {trust} | {_fmt(mem, 1)} "
-            f"| {_fmt(float(sum(kv) / len(kv)) if kv else float('nan'), 0)} |"
+            f"| {_fmt(max(conditions) if conditions else float('nan'))} | {trust} "
+            f"| {_fmt(memory_kib, 1)} | {_fmt(float(sum(kv) / len(kv)) if kv else float('nan'), 0)} |"
         )
+
     errors = [
         {"sample_id": run.sample.sample_id, "arm": arm_id, "error": arm.error}
         for run in runs
@@ -991,39 +1305,55 @@ def gate_d1(
     ]
     report = "\n".join(
         [
-            "# D1 far-context retrieval",
+            "# D1 attribution",
             "",
             f"Config: `{experiment.name}`, seeds {experiment.seed}/{experiment.tasks.filler_seed}/"
             f"{experiment.tasks.needle_seed}, sink={experiment.tier1.sink_tokens}, "
             f"window={experiment.tier1.window_tokens}, slots={experiment.tier2.num_slots}, "
-            f"block={experiment.tier2.block_tokens}.",
+            f"block={experiment.tier2.block_tokens}, allocation={experiment.arms['C3_memory'].allocation}.",
             f"Samples: {len(runs)}; arms: {', '.join(arm_ids)}.",
+            "",
+            "Memory effect = `C3_memory - C1_stream`; writeback effect = `C4_memory_w1 - C3_memory`.",
+            "`C4 - C1` is combined and does not gate.",
             "",
             "## Accuracy by context length",
             "",
-            *table_lines,
+            *accuracy_lines,
             "",
-            f"## Far bucket (>={far_distance}) by task kind",
+            f"## Memory effect (C3 vs C1) in the far bucket (>={far_distance})",
             "",
-            *kind_lines,
+            *kind_table(memory, "C3"),
+            "",
+            f"## Writeback effect (C4 vs C3) in the far bucket (>={far_distance})",
+            "",
+            *kind_table(writeback, "C4"),
+            "",
+            "## Combined diagnostic (C4 vs C1)",
+            "",
+            f"pooled gain {_fmt(float(combined['pooled_gain']))}, "
+            f"{combined['kinds_improved']}/{len(combined['per_kind'])} kinds; not gating.",
             "",
             "## Candidate likelihood (all samples)",
             "",
-            "`C0` is the exact-KV ceiling; `C1` is the no-memory control. A gold probability near",
-            "1 means the model assigns the retrieved code almost all candidate mass; near 0.25 is",
-            "chance. The rank is the gold code's position among the four candidates.",
-            "",
             *likelihood_lines,
             "",
-            "## Paired comparisons (far bucket)",
+            "## Paired comparisons",
             "",
-            f"- {candidate} vs {control}: improved {paired_far['improved']}, degraded "
-            f"{paired_far['degraded']}, p={_fmt(paired_far['mcnemar_p'])}.",
-            f"- {candidate} vs C3_memory: improved {paired_w1['improved']}, degraded "
-            f"{paired_w1['degraded']}, p={_fmt(paired_w1['mcnemar_p'])}.",
-            f"- Near bucket (<= {near_distance}): control {_fmt(near_control)}, candidate "
-            f"{_fmt(near_candidate)}, degradation {_fmt(near_degradation)}; paired improved "
-            f"{paired_near['improved']}, degraded {paired_near['degraded']}, p={_fmt(paired_near['mcnemar_p'])}.",
+            f"- memory C3 vs C1 (far): improved {memory['paired_far']['improved']}, "
+            f"degraded {memory['paired_far']['degraded']}, "
+            f"p={_fmt(float(memory['paired_far']['mcnemar_p']))}.",
+            f"- writeback C4 vs C3 (far): improved {writeback['paired_far']['improved']}, "
+            f"degraded {writeback['paired_far']['degraded']}, "
+            f"p={_fmt(float(writeback['paired_far']['mcnemar_p']))}.",
+            f"- combined C4 vs C1 (far): improved {combined['paired_far']['improved']}, "
+            f"degraded {combined['paired_far']['degraded']}, "
+            f"p={_fmt(float(combined['paired_far']['mcnemar_p']))}.",
+            f"- memory near (<= {near_distance}): control {_fmt(float(memory['near_control']))}, "
+            f"candidate {_fmt(float(memory['near_candidate']))}, "
+            f"degradation {_fmt(float(memory['near_degradation']))}.",
+            f"- writeback near (<= {near_distance}): control {_fmt(float(writeback['near_control']))}, "
+            f"candidate {_fmt(float(writeback['near_candidate']))}, "
+            f"degradation {_fmt(float(writeback['near_degradation']))}.",
             "",
             "## Stability diagnostics",
             "",
@@ -1035,44 +1365,45 @@ def gate_d1(
             "",
             f"Verdict: **{verdict}**.",
             "",
-            "Condition numbers of `inf` mean the key matrix is rank-deficient, which is expected for",
-            "repetitive filler: many slots encode the same direction. It is a capacity observation, not a",
-            "numerical blow-up. D1 does not gate on it; D5 is the dedicated stability gate.",
+            "Condition numbers of `inf` mean the key matrix is rank-deficient, which is expected",
+            "for repetitive filler; it is a capacity/stability diagnostic, not a numerical blow-up.",
         ]
     )
     claims = (
         "# Claims for D1\n\n"
-        "Establishes: on this synthetic passkey retrieval task with candidate-likelihood ranking,\n"
-        "with this checkpoint and budget, "
-        "whether the memory arms improve far-context retrieval over sink+window, and whether W1\n"
-        "writeback changes that result. Exact-KV (C0) is the ceiling; StreamingLLM (C1) is the\n"
-        "no-memory control; C3 isolates W2; C4 adds W1.\n\n"
-        "Does not establish: distribution equivalence, gains on real benchmarks (LongBench/RULER/etc.),\n"
-        "proposer or speculative-decoding benefits, Form N quality, or wall-clock speedup. 'Far' means\n"
-        f"the configured context-length bucket at or above {far_distance} tokens, not a real-world\n"
-        "distance distribution.\n"
+        "Establishes separately: (1) whether the memory slots improve far-context retrieval\n"
+        "(`C3 - C1`, memory effect); (2) whether the W1 writeback adds anything on top of the\n"
+        "memory (`C4 - C3`, writeback effect). `C4 - C1` is reported only as a combined\n"
+        "diagnostic and never gates. Exact KV (`C0`) is the ceiling; `C1` is the no-memory\n"
+        "control.\n\n"
+        "Does not establish: distribution equivalence, real-benchmark generalization, proposer\n"
+        "or speculative-decoding benefits, Form N quality, or wall-clock speedup. 'Far' is the\n"
+        "configured context-length bucket, not a real-world distance distribution.\n"
     )
     if archive is not None:
         archive.write_json(
             "artifacts/summary.json",
             {
                 "by_arm": by_arm,
-                "per_kind_far": per_kind,
-                "paired_far": paired_far,
-                "paired_near": paired_near,
-                "paired_w1": paired_w1,
-                "near_control": near_control,
-                "near_candidate": near_candidate,
-                "near_degradation": near_degradation,
+                "memory_effect": memory,
+                "writeback_effect": writeback,
+                "combined_effect": combined,
                 "errors": errors,
             },
         )
     logger.info(
         "d1_summary",
         verdict=verdict,
-        by_arm={arm_id: by_arm[arm_id]["accuracy"] for arm_id in arm_ids},
-        per_kind_far=per_kind,
-        paired_far=paired_far,
+        memory_effect={
+            "pooled_gain": memory["pooled_gain"],
+            "kinds_improved": memory["kinds_improved"],
+            "mcnemar_p": memory["paired_far"]["mcnemar_p"],
+        },
+        writeback_effect={
+            "pooled_gain": writeback["pooled_gain"],
+            "kinds_improved": writeback["kinds_improved"],
+            "mcnemar_p": writeback["paired_far"]["mcnemar_p"],
+        },
     )
     return GateOutcome(
         gate="d1",
@@ -1081,13 +1412,9 @@ def gate_d1(
         result={
             "status_detail": status,
             "by_arm": by_arm,
-            "per_kind_far": per_kind,
-            "paired_far": paired_far,
-            "paired_near": paired_near,
-            "paired_w1": paired_w1,
-            "near_control": near_control,
-            "near_candidate": near_candidate,
-            "near_degradation": near_degradation,
+            "memory_effect": memory,
+            "writeback_effect": writeback,
+            "combined_effect": combined,
             "checks": [check.as_dict() for check in checks],
             "errors": errors,
         },

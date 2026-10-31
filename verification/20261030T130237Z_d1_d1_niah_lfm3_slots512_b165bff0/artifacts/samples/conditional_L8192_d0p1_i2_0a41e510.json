@@ -1,0 +1,753 @@
+{
+  "arms": {
+    "C0_full": {
+      "arm_id": "C0_full",
+      "build_s": 0.0,
+      "decode_s": 0.8631594159814995,
+      "effective_length": 8224,
+      "error": null,
+      "generated_code": "92840",
+      "generated_correct": true,
+      "prefill_s": 9.67659512499813,
+      "result": {
+        "arm_id": "C0_full",
+        "condition_number_final": NaN,
+        "context_length": 8192,
+        "depth": 0.1,
+        "diagnostics": {
+          "attribute": "north",
+          "build": {},
+          "build_s": 0.0,
+          "cache_bytes": 104040448,
+          "candidate_logprobs": {
+            "40267": -26.846471309661865,
+            "83374": -14.582065468654037,
+            "84918": -25.033740043640137,
+            "92840": -0.0029637841507792473
+          },
+          "candidate_probabilities": {
+            "40267": 2.1979236613358985e-12,
+            "83374": 4.6598977248960984e-07,
+            "84918": 1.3467028845883515e-11,
+            "92840": 0.9999995339945627
+          },
+          "context_token_sha256": "0a41e51015a7b40e3573d7591a147c250a7786d89c818345a48f1e91eb1aec61",
+          "correct_index": 2,
+          "decode_s": 0.8631594159814995,
+          "distance_from_end": 7373,
+          "effective_length": 8224,
+          "eta_final": 0.05,
+          "eta_ratio": 1.0,
+          "eta_steps": 1,
+          "expected_answer_text": "92840",
+          "generated_code": "92840",
+          "generated_correct": true,
+          "gold_candidate_probability": 0.9999995339945627,
+          "gold_candidate_rank": 1,
+          "needle_position": 819,
+          "options": [
+            "40267",
+            "84918",
+            "92840",
+            "83374"
+          ],
+          "owner": "steward",
+          "prefill_s": 9.67659512499813,
+          "score_s": 0.4010513749963138,
+          "step_entropy_mean": 1.312810349976644
+        },
+        "elapsed_s": 10.940805915975943,
+        "exact_match": true,
+        "generated_text": "92840\n\nExplanation: In the provided text, there is a line that says",
+        "generated_token_ids": [
+          26011,
+          1607,
+          8,
+          91180,
+          34,
+          529,
+          278,
+          4116,
+          2803,
+          20,
+          912,
+          355,
+          267,
+          2216,
+          395,
+          2997
+        ],
+        "gold_answer": "92840",
+        "gold_first_token_logprob": -0.0029637841507792473,
+        "gold_first_token_rank": 1,
+        "kv_bytes_per_token": 12700,
+        "memory_bytes": 0,
+        "peak_memory_bytes": 3948068864,
+        "predicted_answer": "92840",
+        "recon_error_final": NaN,
+        "recon_error_trajectory": [],
+        "sample_id": "conditional_L8192_d0p1_i2_0a41e510",
+        "task_kind": "conditional",
+        "trust_scaled_count": 0
+      },
+      "score": {
+        "correct": true,
+        "gold_code": "92840",
+        "gold_logprob": -0.0029637841507792473,
+        "gold_probability": 0.9999995339945627,
+        "gold_rank": 1,
+        "logprobs": {
+          "40267": -26.846471309661865,
+          "83374": -14.582065468654037,
+          "84918": -25.033740043640137,
+          "92840": -0.0029637841507792473
+        },
+        "predicted_code": "92840",
+        "probabilities": {
+          "40267": 2.1979236613358985e-12,
+          "83374": 4.6598977248960984e-07,
+          "84918": 1.3467028845883515e-11,
+          "92840": 0.9999995339945627
+        }
+      },
+      "score_s": 0.4010513749963138
+    },
+    "C1_stream": {
+      "arm_id": "C1_stream",
+      "build_s": 0.0,
+      "decode_s": 0.7802720830077305,
+      "effective_length": 2191,
+      "error": null,
+      "generated_code": null,
+      "generated_correct": false,
+      "prefill_s": 10.07638958300231,
+      "result": {
+        "arm_id": "C1_stream",
+        "condition_number_final": NaN,
+        "context_length": 8192,
+        "depth": 0.1,
+        "diagnostics": {
+          "attribute": "north",
+          "build": {},
+          "build_s": 0.0,
+          "cache_bytes": 29906944,
+          "candidate_logprobs": {
+            "40267": -15.43458366394043,
+            "83374": -16.699514865875244,
+            "84918": -15.120497226715088,
+            "92840": -14.855210304260254
+          },
+          "candidate_probabilities": {
+            "40267": 0.2254188439348091,
+            "83374": 0.06362643307388711,
+            "84918": 0.30860021528027987,
+            "92840": 0.4023545077110239
+          },
+          "context_token_sha256": "0a41e51015a7b40e3573d7591a147c250a7786d89c818345a48f1e91eb1aec61",
+          "correct_index": 2,
+          "decode_s": 0.7802720830077305,
+          "distance_from_end": 7373,
+          "effective_length": 2191,
+          "eta_final": 0.05,
+          "eta_ratio": 1.0,
+          "eta_steps": 1,
+          "expected_answer_text": "92840",
+          "generated_code": null,
+          "generated_correct": false,
+          "gold_candidate_probability": 0.4023545077110239,
+          "gold_candidate_rank": 1,
+          "needle_position": 819,
+          "options": [
+            "40267",
+            "84918",
+            "92840",
+            "83374"
+          ],
+          "owner": "steward",
+          "prefill_s": 10.07638958300231,
+          "score_s": 0.3449376249918714,
+          "step_entropy_mean": 2.0661782717797905
+        },
+        "elapsed_s": 11.201599291001912,
+        "exact_match": true,
+        "generated_text": "1\nQuestion: What is the north passkey for the steward?\nAnswer",
+        "generated_token_ids": [
+          25,
+          207,
+          36508,
+          34,
+          3246,
+          355,
+          278,
+          5549,
+          1729,
+          4016,
+          374,
+          278,
+          31813,
+          507,
+          1283,
+          39630
+        ],
+        "gold_answer": "92840",
+        "gold_first_token_logprob": -14.855210304260254,
+        "gold_first_token_rank": 1,
+        "kv_bytes_per_token": 3650,
+        "memory_bytes": 0,
+        "peak_memory_bytes": 3711090688,
+        "predicted_answer": "92840",
+        "recon_error_final": NaN,
+        "recon_error_trajectory": [],
+        "sample_id": "conditional_L8192_d0p1_i2_0a41e510",
+        "task_kind": "conditional",
+        "trust_scaled_count": 0
+      },
+      "score": {
+        "correct": true,
+        "gold_code": "92840",
+        "gold_logprob": -14.855210304260254,
+        "gold_probability": 0.4023545077110239,
+        "gold_rank": 1,
+        "logprobs": {
+          "40267": -15.43458366394043,
+          "83374": -16.699514865875244,
+          "84918": -15.120497226715088,
+          "92840": -14.855210304260254
+        },
+        "predicted_code": "92840",
+        "probabilities": {
+          "40267": 0.2254188439348091,
+          "83374": 0.06362643307388711,
+          "84918": 0.30860021528027987,
+          "92840": 0.4023545077110239
+        }
+      },
+      "score_s": 0.3449376249918714
+    },
+    "C3_memory": {
+      "arm_id": "C3_memory",
+      "build_s": 10.981914249976398,
+      "decode_s": 1.3203411669819616,
+      "effective_length": 2703,
+      "error": null,
+      "generated_code": null,
+      "generated_correct": false,
+      "prefill_s": 7.089984137564898e-07,
+      "result": {
+        "arm_id": "C3_memory",
+        "condition_number_final": Infinity,
+        "context_length": 8192,
+        "depth": 0.1,
+        "diagnostics": {
+          "attribute": "north",
+          "build": {
+            "block_ranges": [
+              [
+                128,
+                640
+              ],
+              [
+                640,
+                1152
+              ],
+              [
+                1152,
+                1664
+              ],
+              [
+                1664,
+                2176
+              ],
+              [
+                2176,
+                2688
+              ],
+              [
+                2688,
+                3200
+              ],
+              [
+                3200,
+                3712
+              ],
+              [
+                3712,
+                4224
+              ],
+              [
+                4224,
+                4736
+              ],
+              [
+                4736,
+                5248
+              ],
+              [
+                5248,
+                5760
+              ],
+              [
+                5760,
+                6161
+              ]
+            ],
+            "build_seconds": 10.981914249976398,
+            "condition_checks": {
+              "10": [
+                605981.8253986398
+              ],
+              "14": [
+                1676626.8068876895
+              ],
+              "18": [
+                Infinity
+              ],
+              "2": [
+                2240077.549020587
+              ],
+              "22": [
+                2861646.4084870215
+              ],
+              "6": [
+                1479412.2897437373
+              ]
+            },
+            "forgetting_events": 5,
+            "importances": [
+              4.297910253206889,
+              4.307083427906036,
+              4.178739945093791,
+              3.9783835808436074,
+              4.147777179876964,
+              4.176959415276845,
+              4.109644174575806,
+              4.244450549284617,
+              4.1034939885139465,
+              4.076381087303162,
+              3.7531179587046304,
+              3.9631951649983725
+            ],
+            "slot_offsets": [
+              0,
+              50,
+              221,
+              250,
+              279,
+              309,
+              341,
+              374,
+              405,
+              435,
+              461,
+              488
+            ],
+            "slots_per_block": [
+              50,
+              171,
+              29,
+              29,
+              30,
+              32,
+              33,
+              31,
+              30,
+              26,
+              27,
+              24
+            ]
+          },
+          "build_s": 10.981914249976398,
+          "cache_bytes": 83895088,
+          "candidate_logprobs": {
+            "40267": -17.351511001586914,
+            "83374": -13.92420482635498,
+            "84918": -15.193730354309082,
+            "92840": -13.628270626068115
+          },
+          "candidate_probabilities": {
+            "40267": 0.012218394085943189,
+            "83374": 0.37624807639446695,
+            "84918": 0.10571250321521707,
+            "92840": 0.5058210263043729
+          },
+          "context_token_sha256": "0a41e51015a7b40e3573d7591a147c250a7786d89c818345a48f1e91eb1aec61",
+          "correct_index": 2,
+          "decode_s": 1.3203411669819616,
+          "distance_from_end": 7373,
+          "effective_length": 2703,
+          "eta_final": 0.05,
+          "eta_ratio": 1.0,
+          "eta_steps": 1,
+          "expected_answer_text": "92840",
+          "generated_code": null,
+          "generated_correct": false,
+          "gold_candidate_probability": 0.5058210263043729,
+          "gold_candidate_rank": 1,
+          "needle_position": 819,
+          "options": [
+            "40267",
+            "84918",
+            "92840",
+            "83374"
+          ],
+          "owner": "steward",
+          "prefill_s": 7.089984137564898e-07,
+          "score_s": 0.33891562500502914,
+          "step_entropy_mean": 1.7931050561601296
+        },
+        "elapsed_s": 12.641171750961803,
+        "exact_match": true,
+        "generated_text": "0\nQuestion: What is the north passkey for the steward?\nAnswer",
+        "generated_token_ids": [
+          24,
+          207,
+          36508,
+          34,
+          3246,
+          355,
+          278,
+          5549,
+          1729,
+          4016,
+          374,
+          278,
+          31813,
+          507,
+          1283,
+          39630
+        ],
+        "gold_answer": "92840",
+        "gold_first_token_logprob": -13.628270626068115,
+        "gold_first_token_rank": 1,
+        "kv_bytes_per_token": 10241,
+        "memory_bytes": 47696688,
+        "peak_memory_bytes": 3744645120,
+        "predicted_answer": "92840",
+        "recon_error_final": 0.6113800605138143,
+        "recon_error_trajectory": [
+          0.6097766508658727,
+          0.6098797470331192,
+          0.6101054549217224,
+          0.6102817207574844,
+          0.6104438205560049,
+          0.6105226377646128,
+          0.6106467992067337,
+          0.6106996536254883,
+          0.6107566157976786,
+          0.6108587781588236,
+          0.6109571854273478,
+          0.6110545148452123,
+          0.6111158629258474,
+          0.6111909647782644,
+          0.6113800605138143
+        ],
+        "sample_id": "conditional_L8192_d0p1_i2_0a41e510",
+        "task_kind": "conditional",
+        "trust_scaled_count": 0
+      },
+      "score": {
+        "correct": true,
+        "gold_code": "92840",
+        "gold_logprob": -13.628270626068115,
+        "gold_probability": 0.5058210263043729,
+        "gold_rank": 1,
+        "logprobs": {
+          "40267": -17.351511001586914,
+          "83374": -13.92420482635498,
+          "84918": -15.193730354309082,
+          "92840": -13.628270626068115
+        },
+        "predicted_code": "92840",
+        "probabilities": {
+          "40267": 0.012218394085943189,
+          "83374": 0.37624807639446695,
+          "84918": 0.10571250321521707,
+          "92840": 0.5058210263043729
+        }
+      },
+      "score_s": 0.33891562500502914
+    },
+    "C4_memory_w1": {
+      "arm_id": "C4_memory_w1",
+      "build_s": 10.981914249976398,
+      "decode_s": 1.4932973749819212,
+      "effective_length": 2703,
+      "error": null,
+      "generated_code": null,
+      "generated_correct": false,
+      "prefill_s": 7.089984137564898e-07,
+      "result": {
+        "arm_id": "C4_memory_w1",
+        "condition_number_final": 907003.3148251724,
+        "context_length": 8192,
+        "depth": 0.1,
+        "diagnostics": {
+          "attribute": "north",
+          "build": {
+            "block_ranges": [
+              [
+                128,
+                640
+              ],
+              [
+                640,
+                1152
+              ],
+              [
+                1152,
+                1664
+              ],
+              [
+                1664,
+                2176
+              ],
+              [
+                2176,
+                2688
+              ],
+              [
+                2688,
+                3200
+              ],
+              [
+                3200,
+                3712
+              ],
+              [
+                3712,
+                4224
+              ],
+              [
+                4224,
+                4736
+              ],
+              [
+                4736,
+                5248
+              ],
+              [
+                5248,
+                5760
+              ],
+              [
+                5760,
+                6161
+              ]
+            ],
+            "build_seconds": 10.981914249976398,
+            "condition_checks": {
+              "10": [
+                605981.8253986398
+              ],
+              "14": [
+                1676626.8068876895
+              ],
+              "18": [
+                Infinity
+              ],
+              "2": [
+                2240077.549020587
+              ],
+              "22": [
+                2861646.4084870215
+              ],
+              "6": [
+                1479412.2897437373
+              ]
+            },
+            "forgetting_events": 5,
+            "importances": [
+              4.297910253206889,
+              4.307083427906036,
+              4.178739945093791,
+              3.9783835808436074,
+              4.147777179876964,
+              4.176959415276845,
+              4.109644174575806,
+              4.244450549284617,
+              4.1034939885139465,
+              4.076381087303162,
+              3.7531179587046304,
+              3.9631951649983725
+            ],
+            "slot_offsets": [
+              0,
+              50,
+              221,
+              250,
+              279,
+              309,
+              341,
+              374,
+              405,
+              435,
+              461,
+              488
+            ],
+            "slots_per_block": [
+              50,
+              171,
+              29,
+              29,
+              30,
+              32,
+              33,
+              31,
+              30,
+              26,
+              27,
+              24
+            ]
+          },
+          "build_s": 10.981914249976398,
+          "cache_bytes": 83895088,
+          "candidate_logprobs": {
+            "40267": -17.414677619934082,
+            "83374": -13.947360038757324,
+            "84918": -15.121144771575928,
+            "92840": -13.677327632904053
+          },
+          "candidate_probabilities": {
+            "40267": 0.011772029826490258,
+            "83374": 0.37730125197980163,
+            "84918": 0.11665947399075005,
+            "92840": 0.4942672442029581
+          },
+          "context_token_sha256": "0a41e51015a7b40e3573d7591a147c250a7786d89c818345a48f1e91eb1aec61",
+          "correct_index": 2,
+          "decode_s": 1.4932973749819212,
+          "distance_from_end": 7373,
+          "effective_length": 2703,
+          "eta_final": 0.05,
+          "eta_ratio": 1.0,
+          "eta_steps": 1,
+          "expected_answer_text": "92840",
+          "generated_code": null,
+          "generated_correct": false,
+          "gold_candidate_probability": 0.4942672442029581,
+          "gold_candidate_rank": 1,
+          "needle_position": 819,
+          "options": [
+            "40267",
+            "84918",
+            "92840",
+            "83374"
+          ],
+          "owner": "steward",
+          "prefill_s": 7.089984137564898e-07,
+          "score_s": 0.8837026660039555,
+          "step_entropy_mean": 1.8046717522665858
+        },
+        "elapsed_s": 13.358914999960689,
+        "exact_match": true,
+        "generated_text": "0\nQuestion: What is the north passkey for the steward?\nAnswer",
+        "generated_token_ids": [
+          24,
+          207,
+          36508,
+          34,
+          3246,
+          355,
+          278,
+          5549,
+          1729,
+          4016,
+          374,
+          278,
+          31813,
+          507,
+          1283,
+          39630
+        ],
+        "gold_answer": "92840",
+        "gold_first_token_logprob": -13.677327632904053,
+        "gold_first_token_rank": 1,
+        "kv_bytes_per_token": 10241,
+        "memory_bytes": 47696688,
+        "peak_memory_bytes": 3811753984,
+        "predicted_answer": "92840",
+        "recon_error_final": 0.6407568951447805,
+        "recon_error_trajectory": [
+          0.6114248832066854,
+          0.6132262547810873,
+          0.6151980211337408,
+          0.617165669798851,
+          0.6191659768422445,
+          0.6211305260658264,
+          0.6231819838285446,
+          0.6252093017101288,
+          0.6272830118735632,
+          0.629437655210495,
+          0.631626029809316,
+          0.6338469982147217,
+          0.6360741357008616,
+          0.6383504867553711,
+          0.6407568951447805
+        ],
+        "sample_id": "conditional_L8192_d0p1_i2_0a41e510",
+        "task_kind": "conditional",
+        "trust_scaled_count": 0
+      },
+      "score": {
+        "correct": true,
+        "gold_code": "92840",
+        "gold_logprob": -13.677327632904053,
+        "gold_probability": 0.4942672442029581,
+        "gold_rank": 1,
+        "logprobs": {
+          "40267": -17.414677619934082,
+          "83374": -13.947360038757324,
+          "84918": -15.121144771575928,
+          "92840": -13.677327632904053
+        },
+        "predicted_code": "92840",
+        "probabilities": {
+          "40267": 0.011772029826490258,
+          "83374": 0.37730125197980163,
+          "84918": 0.11665947399075005,
+          "92840": 0.4942672442029581
+        }
+      },
+      "score_s": 0.8837026660039555
+    }
+  },
+  "build_s": 10.981914249976398,
+  "error": null,
+  "prefill_s": 19.752985416998854,
+  "sample": {
+    "context_length": 8192,
+    "depth": 0.1,
+    "gold_answer": "92840",
+    "metadata": {
+      "attribute": "north",
+      "code": "92840",
+      "context_token_sha256": "0a41e51015a7b40e3573d7591a147c250a7786d89c818345a48f1e91eb1aec61",
+      "correct_index": 2,
+      "distance_from_end": 7373,
+      "filler_seed": 7101,
+      "needle_position": 819,
+      "needle_positions": [
+        [
+          819,
+          843
+        ]
+      ],
+      "needle_seed": 9107,
+      "options": [
+        "40267",
+        "84918",
+        "92840",
+        "83374"
+      ],
+      "owner": "steward",
+      "sentences": [
+        " The north passkey for steward is 92840.",
+        " The red passkey for steward is 83374."
+      ],
+      "task_index": 2
+    },
+    "prompt_tokens": 8209,
+    "sample_id": "conditional_L8192_d0p1_i2_0a41e510",
+    "task_kind": "conditional"
+  }
+}

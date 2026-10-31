@@ -23,7 +23,7 @@ from typing import Any
 
 import torch
 
-from sprm.backends.lfm3.backend import Lfm3Backend
+from sprm.backends.lfm3.backend import Lfm3Backend, QueryProbe
 from sprm.config.schema import ExperimentConfig
 from sprm.contracts.types import ArmResult, Sample
 from sprm.eval.metrics import CandidateScore, extract_code, rank_candidates
@@ -305,6 +305,9 @@ def _finish_arm(
                     if outcome.steps
                     else float("nan")
                 ),
+                "eta_final": float(outcome.eta_final),
+                "eta_ratio": float(outcome.eta_final / max(experiment.tier2.write_gain, 1.0e-12)),
+                "eta_steps": len(outcome.eta_trajectory),
                 "build": build_diag,
             },
         )
@@ -361,12 +364,32 @@ def run_sample(
     arms: dict[str, ArmRun] = {}
     prefill_total = 0.0
     build_total = 0.0
+    attention_importances: list[float] | None = None
 
     if exact_arms:
+        probe = QueryProbe(
+            backend,
+            backend.info.global_layers,
+            len(sample.question_token_ids),
+        )
         t0 = time.perf_counter()
-        cache, logits, _ = backend.prefill_exact(prompt, chunk_tokens=experiment.tier1.prefill_chunk_tokens)
+        try:
+            cache, logits, _ = backend.prefill_exact(
+                prompt, chunk_tokens=experiment.tier1.prefill_chunk_tokens
+            )
+        finally:
+            probe.detach()
         prefill_s = time.perf_counter() - t0
         prefill_total += prefill_s
+        sink = experiment.tier1.sink_tokens
+        window = experiment.tier1.window_tokens
+        block = experiment.tier2.block_tokens
+        evict_end = len(prompt) - window
+        if evict_end > sink:
+            ranges = [(start, min(start + block, evict_end)) for start in range(sink, evict_end, block)]
+            attention_importances = backend.block_attention_importances(
+                cache, ranges, probe.queries()
+            )
         for arm_id in exact_arms:
             arm_cache = cache.clone()
             arms[arm_id] = _finish_arm(
@@ -411,12 +434,18 @@ def run_sample(
             torch.mps.empty_cache()
 
     if memory_arms:
+        allocation = allocations.pop() if allocations else "uniform"
+        online_importances = attention_importances
+        if allocation == "attention" and not online_importances:
+            allocation = "uniform"
+            online_importances = None
         online = prefill_online(
             backend,
             experiment,
             prompt,
             use_memory=True,
-            allocation=allocations.pop() if allocations else "uniform",
+            allocation=allocation,
+            importances=online_importances,
         )
         build_s = float(online.build.build_seconds) if online.build is not None else 0.0
         prefill_s = max(0.0, online.prefill_seconds - build_s)

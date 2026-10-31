@@ -32,6 +32,14 @@ tier2:
   condition_every_blocks: 8
   min_slots_per_block: 1
   max_slot_multiplier: 4.0
+  anchor_interval: 64
+  anchor_blend: 0.01
+  replay_blocks: 2
+  replay_interval: 32
+  eta_adapt_interval: 16
+  eta_min: 0.005
+  eta_max: 0.2
+  eta_adapt_rate: 0.05
 
 runtime:
   max_new_tokens: 16

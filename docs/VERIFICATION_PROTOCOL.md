@@ -123,6 +123,14 @@ rebuilding the global cache. Prefilling the full context and then slicing the KV
 because the layers above the first dropped global layer already saw the dropped tokens
 (ADR-003).
 
+**Future-query allocation.** `C3`/`C4` do not use uniform slots. During the `C0` exact
+prefill, a `q_norm` hook captures the question-token queries; they are rotated at their
+absolute positions, grouped to KV heads (GQA average), and their attention mass to each
+evicted block is the block importance. The slot budget is allocated proportionally with the
+configured floor and cap (`max_slot_multiplier`). The 512- and 2048-slot runs compare the two
+budgets; `--slots` overrides `tier2.num_slots` and is recorded in the manifest, not in the
+config snapshot.
+
 **Primary metric.** Exact match of the candidate-ranking argmax against the gold code.
 
 **Secondary metrics.** Mean gold candidate log-probability, mean gold probability, mean gold
@@ -140,17 +148,27 @@ tokens.
 **Buckets.** Far: `context_length >= d1_min_far_distance` (32768). Near:
 `context_length <= min(configured lengths)` (8192).
 
-**Pass condition** (all four):
+**Attribution.** Two independent contrasts, never a single `C4 - C1`:
+
+- **memory effect** = `C3_memory - C1_stream` (does the slot memory help?);
+- **writeback effect** = `C4_memory_w1 - C3_memory` (does W1 add anything on top?);
+- `C4 - C1` is reported as a combined diagnostic and never gates.
+
+Each effect is checked separately against all four conditions:
 
 1. at least one far-bucket sample;
 2. `kinds_improved >= d1_min_tasks_improved` (2), where a kind improves when
-   `acc(C4) - acc(C1) >= d1_min_absolute_gain` (0.02) in the far bucket;
-3. near-bucket degradation `acc(C1) - acc(C4) <= d1_max_near_degradation` (0.0);
-4. pooled far McNemar one-sided p `<= d1_mcnemar_alpha` (0.10), pairing C1 and C4 on the
-   same samples.
+   `candidate - control >= d1_min_absolute_gain` (0.02) in the far bucket;
+3. near-bucket degradation `control - candidate <= d1_max_near_degradation` (0.0);
+4. pooled far McNemar one-sided p `<= d1_mcnemar_alpha` (0.10), pairing the same samples.
+
+D1 PASS requires **both** effects to pass. If memory passes and writeback fails, the archive
+says so explicitly: the memory half is viable, the W1 half is not.
 
 A FAIL is a result, not an error. It means the configured memory budget did not beat
-sink+window on this task; the archive records it.
+sink+window on this task; the archive records it. Per the design's M2 rule, if the 32k far
+bucket is still only a few points above chance after the allocation and stability work, stop
+A or move to SparSpec rather than adding samples.
 
 **Reduced runs.** `--samples-per-cell`, `--max-samples`, `--kinds`, `--lengths`, `--depths`,
 and `--arms` reduce the grid. The run's `MANIFEST.json` records `extra.reduced = true` and
@@ -159,21 +177,28 @@ config's verdict is a D1 verdict.
 
 ### D5 — stability (implemented)
 
-One 8k sample, `C4_memory_w1`, 192 W1 decode tokens with the slot refresh. Checks:
+One 8k sample, `C4_memory_w1`, 192 W1 decode tokens with attention allocation, anchors,
+bounded replay, eta adaptation, and the slot refresh. Checks:
 
 1. `max condition <= d5_max_condition` (1e6);
-2. window reconstruction shrinkage `head/tail >= d5_min_eta_ratio` (1.0);
+2. **generated-token** reconstruction shrinkage `head/tail >= d5_min_eta_ratio` (1.0);
 3. the decode ran the full budget.
 
-`d5_min_eta_ratio` is interpreted as the minimum shrinkage ratio because the design's eta
-adaptation is not implemented. The archived run
-`20261030T113511Z_d5_d1_niah_lfm3_e72d25ba` failed both substantive checks: condition `inf`
-(rank-deficient key matrix on repetitive filler) and shrinkage 0.956 (the window
-reconstruction error grew about 4.6% over 192 tokens). This is a stability finding, not a
-numerical blow-up.
+The generated-token window is the part W1 actually writes. The full-window shrinkage is
+reported as a **diagnostic**, not a gate: most of that window is prefill KV that W1 never
+wrote, so it tests the memory's out-of-sample generalization, not the writeback.
 
-D5 does not test anchors, replay, or adaptive eta; those are not implemented. It also does
-not measure long-text task accuracy or distribution equivalence.
+Anchors: the reference is set on the first W1 write and refreshed every
+`anchor_interval` writes; otherwise the memory is blended toward it by `anchor_blend`.
+Replay: `write_slots` keeps the last `replay_blocks` exact blocks; every
+`replay_interval` W1 writes they are re-written with a half-gain delta (this is a delta
+replay, not the design's batch least-squares refit). Eta: every `eta_adapt_interval` steps
+the gain is scaled by `exp(rate * relative_error_change)`, clamped to
+`[eta_min, eta_max]`.
+
+D5 2048 passes (condition 80, generated-token shrinkage >= 1); D5 512 fails on the configured
+checks and is archived as a budget-limited negative result. D5 does not measure long-text
+task accuracy or distribution equivalence.
 
 ## 4. Archive layout
 
@@ -192,28 +217,57 @@ verification/<UTC timestamp>_<gate>_<slug>_<config hash>/
 
 `verification/index.json` is an append-only registry.
 
-## 4.1 Current archive (2026-10-30)
+### S1 — speculative decoding speed (implemented)
+
+Prompt-lookup draft (`n`-gram suffix match) with an **all-or-nothing** commit: the target
+verifies the whole proposal in one forward; if every token matches greedy, the batch plus one
+bonus token is kept; otherwise global/sliding KV is cropped and conv state restored, and the
+normal greedy token is decoded. Checks:
+
+1. output is token-identical to greedy decoding;
+2. `speculative tokens/s > greedy tokens/s`;
+3. the draft proposed at least one token.
+
+The stored run uses `C0_full` (exact KV); the memory arm is not a speed lever. It does not
+claim general-task acceptance, memory-arm speed, batch>1 throughput, or that compression
+itself accelerates generation.
+
+## 4.1 Current archive (2026-10-30, A route)
+
+All runs are from source/config `b165bff0`; `sprm archive verify` passes on each.
 
 | gate | run id | status | note |
 |------|--------|--------|------|
-| V0 | `20261030T064802Z_v0_d1_niah_lfm3_e72d25ba` | PASS | model hashes recorded |
-| V1 | `20261030T064813Z_v1_d1_niah_lfm3_e72d25ba` | PASS | no model load |
-| V2 | `20261030T064814Z_v2_d1_niah_lfm3_e72d25ba` | PASS | surgery + online structure |
-| D1 | `20261030T064851Z_d1_d1_niah_lfm3_e72d25ba` | FAIL | full 216-sample grid, `reduced=false` |
-| D5 | `20261030T113511Z_d5_d1_niah_lfm3_e72d25ba` | FAIL | 192-token W1 decode; condition `inf`, shrinkage 0.956 |
+| V0 | `20261030T125922Z_v0_d1_niah_lfm3_b165bff0` | PASS | backend contract |
+| V1 | `20261030T125935Z_v1_d1_niah_lfm3_b165bff0` | PASS | contracts/properties |
+| V2 | `20261030T125936Z_v2_d1_niah_lfm3_b165bff0` | PASS | surgery + online structure |
+| D5 | `20261030T130006Z_d5_d1_niah_lfm3_slots512_b165bff0` | FAIL | 512 slots: condition/shrinkage fail |
+| D5 | `20261030T130102Z_d5_d1_niah_lfm3_slots2048_b165bff0` | PASS | condition 80; generated-W1 shrinkage pass |
+| S1 | `20261030T130205Z_s1_d1_niah_lfm3_b165bff0` | PASS | 2.34x, output match, acceptance 1.0 |
+| D1 | `20261030T130237Z_d1_d1_niah_lfm3_slots512_b165bff0` | FAIL | memory far +1.39pp, p=0.50; writeback 0/0 |
+| D1 | `20261030T175745Z_d1_d1_niah_lfm3_slots2048_b165bff0` | FAIL | memory PASS (+43.06pp, p=3.9e-7); writeback FAIL (0.0, p=0.75) |
+| D1 | `20261031T052302Z_d1_d1_niah_lfm3_slots1024_b165bff0` | FAIL | memory PASS (+13.89pp, p=0.021); writeback FAIL (0.0) |
 
-The full D1 ran from source `ab1c0bc2ce9b` on 216 samples. `C0` was 97.2% overall
-(94.4% at 32k), `C1` 42.6% (26.4% at 32k), `C3`/`C4` 44.9% (30.6% at 32k). The far-bucket
-gain was +4.17 pp (single +4.17, multi +8.33, conditional 0.0; 2/3 kinds), near degradation
-0.0, and the paired far result was 3 improved / 0 degraded / p=0.125. The gate fails only on
-the McNemar threshold. W1 was 0 improved / 0 degraded; C3 and C4 are indistinguishable in
-accuracy and nearly so in candidate probability.
+**D1 512:** memory overall 59.3% vs 42.6% (8k 79.2/47.2, 16k 70.8/54.2), but the 32k far
+gain is only +1.39pp (27.8% vs 26.4%), paired 4 improved / 3 degraded, p=0.50. Writeback is
+0/0. Per M2, this budget is a stop: 32k is within a few points of chance.
 
-D5 was added after the D1 seal, so its source hash differs (`da069ddd2815`). It ran one 8k
-sample for 192 W1 decode tokens. The key-matrix condition was `inf` (rank-deficient) and the
-window reconstruction shrinkage was 0.956 (error grew ~4.6%); both configured checks failed.
-This tests the implemented trust region and slot refresh only; anchors, replay, and eta
-adaptation are not implemented.
+**D1 2048:** memory far 26.4% -> 69.4% (**+43.06pp**), 3/3 kinds (single 29.2 -> 100,
+multi 37.5 -> 66.7, conditional 12.5 -> 41.7), near degradation -40.3pp, 36 improved /
+5 degraded, p=3.9e-7: **memory effect PASS**. Writeback is 0.0pp, 0/3 kinds, 1 improved /
+1 degraded, p=0.75: **writeback effect FAIL**; C3 and C4 both score 50/72 at 32k.
+
+**D1 1024:** memory far 26.4% -> 40.3% (+13.89pp), 2/3 kinds, near -34.7pp, 15 improved /
+5 degraded, p=0.021: memory PASS. Writeback 0.0, 0/3, p=1.0: FAIL.
+
+**Frontier (32k, resident bytes):** 512 = 4.84x / 27.8%; 1024 = 3.52x / 40.3%;
+2048 = 2.28x / 69.4%. The 8x design target appears only in the no-W1/bf16/logical
+projections, not in the measured resident implementation. The working point is 2048 at
+2.28x resident. See `docs/frontier.md` and `docs/frontier.svg`.
+
+**Decision (M2):** at 512, stop A or move to SparSpec; at 2048, keep A's memory
+(W2 + future-query allocation) and drop or redesign W1. N remains deferred. W1 is cut from
+the frontier (ADR-008).
 
 ## 5. Interpretation rules
 
@@ -221,8 +275,9 @@ adaptation are not implemented.
   compare this accuracy to a free-form NIAH number.
 - A gold probability above chance without an argmax win is a partial retrieval signal. Report
   it, but do not count it as a D1 pass.
-- No speed claim may be derived from this harness: it measures memory quality and cache
-  correctness, not throughput.
+- S1 is the only speed gate. It uses the exact `C0` arm and a repeated-sentence prompt; it
+  does not claim general-task acceptance, memory-arm speed, or batch>1 throughput.
 - A D1 FAIL at 512 slots does not prove the design cannot work; it falsifies the configured
-  budget on this task. Capacity sweeps are diagnostics, not D1 redefinitions.
+  budget. The 2048 run shows the memory effect at 4x the budget; that is a budget change, not
+  a free win, and the writeback is still null at both budgets.
 - Form N is not verified and must not be described as implemented beyond its budget planner.

@@ -18,6 +18,11 @@ sliding-window layers keep their native caches.
   (`refresh_memory_slots`); without that refresh the write is invisible to the next forward.
   The live decode has a one-step lag: the logits for `t+1` are computed before the write of
   `t`. Candidate scoring removes the lag by re-feeding each token after the refresh.
+- **Anchors / replay / eta.** The first W1 write establishes `M_ref`; it is refreshed every
+  `anchor_interval` writes and the memory is blended toward it between refreshes. The last
+  `replay_blocks` absorbed blocks are kept and re-written as a half-gain delta every
+  `replay_interval` W1 writes. The W1 gain adapts every `eta_adapt_interval` steps from the
+  window error trend, clamped to `[eta_min, eta_max]` (ADR-006).
 - **W2 absorption.** When a block leaves the exact window, its keys are unrotated, clustered
   with cosine k-means, and written into that block's dedicated slot range. Two delta
   refinement passes follow.
@@ -38,9 +43,11 @@ in order and, once the prefix exceeds `sink + window`, before forwarding each ch
 last-token logits are the arm's first next-token distribution. See ADR-003 for why post-hoc
 slicing is invalid and the measured contamination it produces.
 
-Slot allocation is uniform online. `allocation: effective_rank` remains available for the
-post-hoc `form-a build` diagnostic, but D1 arms use `uniform` because importance-based
-allocation needs a first pass that would defeat the online protocol.
+Slot allocation uses **future-query attention** online. During the `C0` exact prefill, the
+`q_norm` hook captures the question-token queries; after RoPE and GQA head grouping, their
+attention mass to each evicted block is the importance. The budget is allocated
+proportionally with a floor and a `max_slot_multiplier` cap. `uniform` remains available for
+the post-hoc diagnostic. The 512/2048 runs compare budgets (ADR-005).
 
 ## Arms
 
@@ -97,6 +104,15 @@ The run fails both: the condition is `inf` because the key matrix is rank-defici
 repetitive filler, and the reconstruction error grew about 4.6% over the decode (shrinkage
 0.956). Anchors, replay, and adaptive eta are not implemented; D5 tests only the trust region
 and the W1 slot refresh.
+
+## S1 speed half
+
+`decode_speculative` uses a prompt-lookup draft (last `n`-token suffix match) and an
+all-or-nothing commit: one target forward verifies the whole proposal; a full match keeps it
+plus a bonus token, any mismatch crops global/sliding KV and restores the short-conv state
+before the normal greedy token. The output is token-identical to greedy. On a repeated
+sentence, S1 measured 1.85–2.34x tokens/s with 26/26 draft acceptance. This is a mechanism
+test, not a general-task acceptance estimate, and it does not claim memory-arm speedup.
 
 ## Known limitations
 

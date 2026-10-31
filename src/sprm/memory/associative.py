@@ -39,6 +39,10 @@ class AssociativeMemoryConfig:
     key_l2_normalize: bool
     kmeans_iters: int = 8
     refine_passes: int = 2
+    anchor_interval: int = 64
+    anchor_blend: float = 0.01
+    replay_blocks: int = 2
+    replay_interval: int = 32
     trust_region_floor: float = 1.0
     eps: float = 1e-8
 
@@ -58,6 +62,9 @@ class AssociativeMemory:
         keys = keys / keys.norm(dim=-1, keepdim=True).clamp_min(config.eps)
         self.M_k = keys.to(self.device)
         self.M_v = torch.zeros(config.num_slots, config.value_dim, device=self.device, dtype=torch.float32)
+        self.M_k_ref = self.M_k.clone()
+        self.M_v_ref = self.M_v.clone()
+        self._replay: list[tuple[torch.Tensor, torch.Tensor, torch.Tensor]] = []
         self.slot_positions = torch.full((config.num_slots,), -1, device=self.device, dtype=torch.long)
         self.slot_block_ids = torch.full((config.num_slots,), -1, device=self.device, dtype=torch.long)
         self._stats = MemoryStats(
@@ -65,6 +72,9 @@ class AssociativeMemory:
             num_slots=config.num_slots,
             key_dim=config.key_dim,
             value_dim=config.value_dim,
+        )
+        self._stats.extra.update(
+            {"anchor_updates": 0.0, "replay_events": 0.0, "replay_tokens": 0.0}
         )
         self._cond_cache: float | None = None
         self._initialized_slots = 0
@@ -207,7 +217,12 @@ class AssociativeMemory:
         effective_gain = self.config.write_gain if gain is None else gain
         if effective_gain < 0:
             raise MemoryInvariantError("gain must be >= 0")
-        return self._delta_update(keys, values, gain=effective_gain, slot_slice=slice(0, self.num_slots))
+        report = self._delta_update(
+            keys, values, gain=effective_gain, slot_slice=slice(0, self.num_slots)
+        )
+        self._maybe_anchor()
+        self._maybe_replay()
+        return report
 
     def write_slots(
         self,
@@ -262,7 +277,67 @@ class AssociativeMemory:
         gain = self.config.write_gain if gain is None else gain
         for _ in range(self.config.refine_passes):
             report = self._delta_update(k, v, gain=gain, slot_slice=sl, count=False)
+        self._record_replay(k, v, positions)
         return report
+
+    def _maybe_anchor(self) -> None:
+        """Pull the memory toward a frozen reference; refresh the reference every N writes.
+
+        The first write establishes the reference, so the initial random keys / zero values
+        are never used as an anchor.
+        """
+        writes = self._stats.writes
+        interval = max(1, self.config.anchor_interval)
+        if writes <= 1 or writes % interval == 0:
+            with torch.no_grad():
+                self.M_k_ref.copy_(self.M_k)
+                self.M_v_ref.copy_(self.M_v)
+            self._stats.extra["anchor_updates"] = float(self._stats.extra["anchor_updates"]) + 1.0
+            return
+        blend = self.config.anchor_blend
+        if blend <= 0.0:
+            return
+        with torch.no_grad():
+            self.M_k.mul_(1.0 - blend).add_(self.M_k_ref, alpha=blend)
+            self.M_v.mul_(1.0 - blend).add_(self.M_v_ref, alpha=blend)
+            if self.config.key_l2_normalize:
+                self.M_k.copy_(self._normalize(self.M_k))
+        self._invalidate()
+
+    def _record_replay(
+        self, keys: torch.Tensor, values: torch.Tensor, positions: torch.Tensor
+    ) -> None:
+        limit = max(0, self.config.replay_blocks)
+        if limit == 0:
+            return
+        self._replay.append(
+            (
+                keys.detach().float().cpu(),
+                values.detach().float().cpu(),
+                positions.detach().cpu(),
+            )
+        )
+        while len(self._replay) > limit:
+            self._replay.pop(0)
+        self._stats.extra["replay_tokens"] = float(
+            sum(int(block[0].shape[0]) for block in self._replay)
+        )
+
+    def _maybe_replay(self) -> None:
+        interval = max(1, self.config.replay_interval)
+        if not self._replay or self._stats.writes % interval != 0:
+            return
+        gain = self.config.write_gain * 0.5
+        for keys, values, _positions in self._replay:
+            self._delta_update(
+                keys.to(self.device),
+                values.to(self.device),
+                gain=gain,
+                slot_slice=slice(0, self.num_slots),
+                count=False,
+            )
+        self._stats.extra["replay_events"] = float(self._stats.extra["replay_events"]) + 1.0
+        self._invalidate()
 
     def _seed_for(self, block_id: int) -> int:
         import hashlib
@@ -292,6 +367,13 @@ class AssociativeMemory:
             + self.M_v.numel() * self.M_v.element_size()
             + self.slot_positions.numel() * self.slot_positions.element_size()
             + self.slot_block_ids.numel() * self.slot_block_ids.element_size()
+            + self.M_k_ref.numel() * self.M_k_ref.element_size()
+            + self.M_v_ref.numel() * self.M_v_ref.element_size()
+            + sum(
+                int(tensor.numel() * tensor.element_size())
+                for block in self._replay
+                for tensor in block
+            )
         )
 
     def slot_snapshot(self) -> dict[str, torch.Tensor]:
@@ -311,6 +393,12 @@ class AssociativeMemory:
         other.M_v = self.M_v.clone()
         other.slot_positions = self.slot_positions.clone()
         other.slot_block_ids = self.slot_block_ids.clone()
+        other.M_k_ref = self.M_k_ref.clone()
+        other.M_v_ref = self.M_v_ref.clone()
+        other._replay = [
+            (keys.clone(), values.clone(), positions.clone())
+            for keys, values, positions in self._replay
+        ]
         other._stats = MemoryStats(**vars(self._stats))
         other._stats.extra = dict(self._stats.extra)
         other._cond_cache = self._cond_cache

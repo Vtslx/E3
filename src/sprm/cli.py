@@ -11,6 +11,7 @@ import json
 import sys
 import traceback
 from collections.abc import Sequence
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -22,6 +23,7 @@ from sprm.eval.gates import (
     GateOutcome,
     gate_d1,
     gate_d5,
+    gate_s1,
     gate_v0,
     gate_v1,
     gate_v2,
@@ -73,13 +75,14 @@ def _parser() -> argparse.ArgumentParser:
 
     verify = sub.add_parser("verify", help="run a verification gate")
     verify_sub = verify.add_subparsers(dest="gate", required=True)
-    for gate in ("v0", "v1", "v2", "d1", "d5"):
+    for gate in ("v0", "v1", "v2", "d1", "d5", "s1"):
         gate_parser = verify_sub.add_parser(gate)
         gate_parser.add_argument("--config", required=True)
         gate_parser.add_argument("--quiet", action="store_true")
         gate_parser.add_argument("--no-archive", action="store_true")
         gate_parser.add_argument("--archive-root", default=None)
         if gate == "d1":
+            gate_parser.add_argument("--slots", type=int, default=None, help="override tier2.num_slots (512/2048)")
             gate_parser.add_argument("--kinds", default=None, help="comma separated task kinds")
             gate_parser.add_argument("--lengths", default=None, help="comma separated context lengths")
             gate_parser.add_argument("--depths", default=None, help="comma separated needle depths")
@@ -87,6 +90,12 @@ def _parser() -> argparse.ArgumentParser:
             gate_parser.add_argument("--max-samples", type=int, default=None)
             gate_parser.add_argument("--arms", default=None, help="comma separated arm ids")
             gate_parser.add_argument("--max-new-tokens", type=int, default=None)
+        if gate == "d5":
+            gate_parser.add_argument("--slots", type=int, default=None, help="override tier2.num_slots (512/2048)")
+        if gate == "s1":
+            gate_parser.add_argument("--max-new-tokens", type=int, default=32)
+            gate_parser.add_argument("--gamma", type=int, default=4)
+            gate_parser.add_argument("--ngram", type=int, default=3)
         gate_parser.set_defaults(func=_cmd_verify)
 
     archive = sub.add_parser("archive", help="inspect the verification archive")
@@ -131,6 +140,7 @@ def _verify_overrides(args: argparse.Namespace) -> dict[str, Any]:
         "max_samples": getattr(args, "max_samples", None),
         "arms": _split(getattr(args, "arms", None)),
         "max_new_tokens": getattr(args, "max_new_tokens", None),
+        "slots": getattr(args, "slots", None),
     }
 
 
@@ -276,10 +286,18 @@ def _cmd_form_n_build(args: argparse.Namespace) -> int:
 # ---------------------------------------------------------------------- verify
 def _cmd_verify(args: argparse.Namespace) -> int:
     config = _load(args.config)
+    config_sha256 = getattr(config, "config_sha256", "0" * 64)
     gate = args.gate
+    slots = getattr(args, "slots", None)
+    if slots is not None:
+        config = replace(config, tier2=replace(config.tier2, num_slots=int(slots)))
     overrides = _verify_overrides(args) if gate == "d1" else {}
     reduced = _reduced(overrides, config) if gate == "d1" else False
-    slug = config.name if not reduced else f"{config.name}_reduced"
+    slug = config.name
+    if slots is not None:
+        slug = f"{slug}_slots{slots}"
+    if reduced:
+        slug = f"{slug}_reduced"
     archive: RunArchive | None = None
     if not args.no_archive:
         root = args.archive_root or config.archive.root
@@ -287,7 +305,7 @@ def _cmd_verify(args: argparse.Namespace) -> int:
             root=root,
             gate=gate,
             slug=slug,
-            config_sha256=getattr(config, "config_sha256", "0" * 64),
+            config_sha256=config_sha256,
             config_path=config.source_path,
             argv=sys.argv,
             echo=not args.quiet,
@@ -306,6 +324,22 @@ def _cmd_verify(args: argparse.Namespace) -> int:
                 outcome = gate_v2(backend, config, logger, archive=archive)
             elif gate == "d5":
                 outcome = gate_d5(backend, config, logger, archive=archive)
+                outcome.extra = {"slot_budget": slots if slots is not None else config.tier2.num_slots}
+            elif gate == "s1":
+                outcome = gate_s1(
+                    backend,
+                    config,
+                    logger,
+                    archive=archive,
+                    max_new_tokens=int(getattr(args, "max_new_tokens", 32)),
+                    gamma=int(getattr(args, "gamma", 4)),
+                    ngram=int(getattr(args, "ngram", 3)),
+                )
+                outcome.extra = {
+                    "max_new_tokens": int(getattr(args, "max_new_tokens", 32)),
+                    "gamma": int(getattr(args, "gamma", 4)),
+                    "ngram": int(getattr(args, "ngram", 3)),
+                }
             elif gate == "d1":
                 kinds = overrides.get("kinds") or list(config.tasks.kinds)
                 lengths = overrides.get("lengths") or list(config.tasks.context_lengths)
@@ -346,6 +380,7 @@ def _cmd_verify(args: argparse.Namespace) -> int:
                     "sample_count": len(samples),
                     "arms": arm_ids,
                     "reduced": reduced,
+                    "slot_budget": slots if slots is not None else config.tier2.num_slots,
                 }
             else:  # pragma: no cover - argparse constrains this
                 raise VerificationError(f"unknown gate {gate!r}")

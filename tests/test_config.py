@@ -29,7 +29,7 @@ def test_repository_config_loads() -> None:
     assert config.arms["C0_full"].memory is False
     assert config.arms["C0_full"].compressed is False
     assert config.arms["C1_stream"].compressed is True
-    assert config.arms["C3_memory"].allocation == "uniform"
+    assert config.arms["C3_memory"].allocation == "attention"
     assert config.gates.d1_min_far_distance == 32768
     assert config.tier1.window_tokens % config.tier1.prefill_chunk_tokens == 0
     assert config.tier2.block_tokens == config.tier1.prefill_chunk_tokens

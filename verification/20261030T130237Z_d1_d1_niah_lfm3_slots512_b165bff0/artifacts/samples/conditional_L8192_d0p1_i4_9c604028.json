@@ -1,0 +1,671 @@
+{
+  "arms": {
+    "C0_full": {
+      "arm_id": "C0_full",
+      "build_s": 0.0,
+      "decode_s": 0.20272075000684708,
+      "effective_length": 8212,
+      "error": null,
+      "generated_code": "16090",
+      "generated_correct": true,
+      "prefill_s": 9.601040625013411,
+      "result": {
+        "arm_id": "C0_full",
+        "condition_number_final": NaN,
+        "context_length": 8192,
+        "depth": 0.1,
+        "diagnostics": {
+          "attribute": "north",
+          "build": {},
+          "build_s": 0.0,
+          "cache_bytes": 103892992,
+          "candidate_logprobs": {
+            "16090": -0.005529183661565185,
+            "29297": -22.960483074188232,
+            "34348": -22.305877208709717,
+            "42790": -12.42216344177723
+          },
+          "candidate_probabilities": {
+            "16090": 0.9999959490567889,
+            "29297": 1.0734663464374321e-10,
+            "34348": 2.065761356164898e-10,
+            "42790": 4.050629288388225e-06
+          },
+          "context_token_sha256": "9c6040287a00f95542b84f5da6ad9913e26768bd42e9b4d13569eee6a09841f5",
+          "correct_index": 1,
+          "decode_s": 0.20272075000684708,
+          "distance_from_end": 7373,
+          "effective_length": 8212,
+          "eta_final": 0.05,
+          "eta_ratio": 1.0,
+          "eta_steps": 1,
+          "expected_answer_text": "16090",
+          "generated_code": "16090",
+          "generated_correct": true,
+          "gold_candidate_probability": 0.9999959490567889,
+          "gold_candidate_rank": 1,
+          "needle_position": 819,
+          "options": [
+            "42790",
+            "16090",
+            "34348",
+            "29297"
+          ],
+          "owner": "archivist",
+          "prefill_s": 9.601040625013411,
+          "score_s": 0.3823546250059735,
+          "step_entropy_mean": 0.8488653292879462
+        },
+        "elapsed_s": 10.186116000026232,
+        "exact_match": true,
+        "generated_text": "16090.",
+        "generated_token_ids": [
+          6759,
+          1974,
+          22,
+          124900
+        ],
+        "gold_answer": "16090",
+        "gold_first_token_logprob": -0.005529183661565185,
+        "gold_first_token_rank": 1,
+        "kv_bytes_per_token": 12682,
+        "memory_bytes": 0,
+        "peak_memory_bytes": 3939680256,
+        "predicted_answer": "16090",
+        "recon_error_final": NaN,
+        "recon_error_trajectory": [],
+        "sample_id": "conditional_L8192_d0p1_i4_9c604028",
+        "task_kind": "conditional",
+        "trust_scaled_count": 0
+      },
+      "score": {
+        "correct": true,
+        "gold_code": "16090",
+        "gold_logprob": -0.005529183661565185,
+        "gold_probability": 0.9999959490567889,
+        "gold_rank": 1,
+        "logprobs": {
+          "16090": -0.005529183661565185,
+          "29297": -22.960483074188232,
+          "34348": -22.305877208709717,
+          "42790": -12.42216344177723
+        },
+        "predicted_code": "16090",
+        "probabilities": {
+          "16090": 0.9999959490567889,
+          "29297": 1.0734663464374321e-10,
+          "34348": 2.065761356164898e-10,
+          "42790": 4.050629288388225e-06
+        }
+      },
+      "score_s": 0.3823546250059735
+    },
+    "C1_stream": {
+      "arm_id": "C1_stream",
+      "build_s": 0.0,
+      "decode_s": 0.1097896249848418,
+      "effective_length": 2177,
+      "error": null,
+      "generated_code": null,
+      "generated_correct": false,
+      "prefill_s": 9.958683874981944,
+      "result": {
+        "arm_id": "C1_stream",
+        "condition_number_final": NaN,
+        "context_length": 8192,
+        "depth": 0.1,
+        "diagnostics": {
+          "attribute": "north",
+          "build": {},
+          "build_s": 0.0,
+          "cache_bytes": 29734912,
+          "candidate_logprobs": {
+            "16090": -14.848121166229248,
+            "29297": -16.576295852661133,
+            "34348": -16.609731197357178,
+            "42790": -17.06985569000244
+          },
+          "candidate_probabilities": {
+            "16090": 0.6859664322721558,
+            "29297": 0.12183333540780938,
+            "34348": 0.11782714326131496,
+            "42790": 0.07437308905871984
+          },
+          "context_token_sha256": "9c6040287a00f95542b84f5da6ad9913e26768bd42e9b4d13569eee6a09841f5",
+          "correct_index": 1,
+          "decode_s": 0.1097896249848418,
+          "distance_from_end": 7373,
+          "effective_length": 2177,
+          "eta_final": 0.05,
+          "eta_ratio": 1.0,
+          "eta_steps": 1,
+          "expected_answer_text": "16090",
+          "generated_code": null,
+          "generated_correct": false,
+          "gold_candidate_probability": 0.6859664322721558,
+          "gold_candidate_rank": 1,
+          "needle_position": 819,
+          "options": [
+            "42790",
+            "16090",
+            "34348",
+            "29297"
+          ],
+          "owner": "archivist",
+          "prefill_s": 9.958683874981944,
+          "score_s": 0.3699512080056593,
+          "step_entropy_mean": 4.147039413452148
+        },
+        "elapsed_s": 10.438424707972445,
+        "exact_match": true,
+        "generated_text": "0",
+        "generated_token_ids": [
+          24,
+          124900
+        ],
+        "gold_answer": "16090",
+        "gold_first_token_logprob": -14.848121166229248,
+        "gold_first_token_rank": 1,
+        "kv_bytes_per_token": 3629,
+        "memory_bytes": 0,
+        "peak_memory_bytes": 3711090688,
+        "predicted_answer": "16090",
+        "recon_error_final": NaN,
+        "recon_error_trajectory": [],
+        "sample_id": "conditional_L8192_d0p1_i4_9c604028",
+        "task_kind": "conditional",
+        "trust_scaled_count": 0
+      },
+      "score": {
+        "correct": true,
+        "gold_code": "16090",
+        "gold_logprob": -14.848121166229248,
+        "gold_probability": 0.6859664322721558,
+        "gold_rank": 1,
+        "logprobs": {
+          "16090": -14.848121166229248,
+          "29297": -16.576295852661133,
+          "34348": -16.609731197357178,
+          "42790": -17.06985569000244
+        },
+        "predicted_code": "16090",
+        "probabilities": {
+          "16090": 0.6859664322721558,
+          "29297": 0.12183333540780938,
+          "34348": 0.11782714326131496,
+          "42790": 0.07437308905871984
+        }
+      },
+      "score_s": 0.3699512080056593
+    },
+    "C3_memory": {
+      "arm_id": "C3_memory",
+      "build_s": 10.980521750025218,
+      "decode_s": 0.17605304199969396,
+      "effective_length": 2689,
+      "error": null,
+      "generated_code": null,
+      "generated_correct": false,
+      "prefill_s": 5.829788278788328e-07,
+      "result": {
+        "arm_id": "C3_memory",
+        "condition_number_final": Infinity,
+        "context_length": 8192,
+        "depth": 0.1,
+        "diagnostics": {
+          "attribute": "north",
+          "build": {
+            "block_ranges": [
+              [
+                128,
+                640
+              ],
+              [
+                640,
+                1152
+              ],
+              [
+                1152,
+                1664
+              ],
+              [
+                1664,
+                2176
+              ],
+              [
+                2176,
+                2688
+              ],
+              [
+                2688,
+                3200
+              ],
+              [
+                3200,
+                3712
+              ],
+              [
+                3712,
+                4224
+              ],
+              [
+                4224,
+                4736
+              ],
+              [
+                4736,
+                5248
+              ],
+              [
+                5248,
+                5760
+              ],
+              [
+                5760,
+                6161
+              ]
+            ],
+            "build_seconds": 10.980521750025218,
+            "condition_checks": {
+              "10": [
+                18008871.865464788
+              ],
+              "14": [
+                797457.8350600036
+              ],
+              "18": [
+                Infinity
+              ],
+              "2": [
+                21021000.065088913
+              ],
+              "22": [
+                3081795.833181564
+              ],
+              "6": [
+                587761.2914686324
+              ]
+            },
+            "forgetting_events": 4,
+            "importances": [
+              4.417635381221771,
+              4.214168389638265,
+              3.8095412651697793,
+              4.284381290276845,
+              4.269537587960561,
+              4.214505076408386,
+              3.824394961198171,
+              4.095220943291982,
+              3.917321582635244,
+              3.81282502412796,
+              3.8696760137875876,
+              3.763563414414724
+            ],
+            "slot_offsets": [
+              0,
+              54,
+              225,
+              252,
+              283,
+              311,
+              342,
+              375,
+              406,
+              436,
+              462,
+              489
+            ],
+            "slots_per_block": [
+              54,
+              171,
+              27,
+              31,
+              28,
+              31,
+              33,
+              31,
+              30,
+              26,
+              27,
+              23
+            ]
+          },
+          "build_s": 10.980521750025218,
+          "cache_bytes": 83723056,
+          "candidate_logprobs": {
+            "16090": -12.693984508514404,
+            "29297": -18.52626609802246,
+            "34348": -16.568214416503906,
+            "42790": -17.220542430877686
+          },
+          "candidate_probabilities": {
+            "16090": 0.9666322829236569,
+            "29297": 0.0028335676397078257,
+            "34348": 0.02007726839160347,
+            "42790": 0.010456881045031856
+          },
+          "context_token_sha256": "9c6040287a00f95542b84f5da6ad9913e26768bd42e9b4d13569eee6a09841f5",
+          "correct_index": 1,
+          "decode_s": 0.17605304199969396,
+          "distance_from_end": 7373,
+          "effective_length": 2689,
+          "eta_final": 0.05,
+          "eta_ratio": 1.0,
+          "eta_steps": 1,
+          "expected_answer_text": "16090",
+          "generated_code": null,
+          "generated_correct": false,
+          "gold_candidate_probability": 0.9666322829236569,
+          "gold_candidate_rank": 1,
+          "needle_position": 819,
+          "options": [
+            "42790",
+            "16090",
+            "34348",
+            "29297"
+          ],
+          "owner": "archivist",
+          "prefill_s": 5.829788278788328e-07,
+          "score_s": 0.3657573329983279,
+          "step_entropy_mean": 4.122955918312073
+        },
+        "elapsed_s": 11.522332708002068,
+        "exact_match": true,
+        "generated_text": "0",
+        "generated_token_ids": [
+          24,
+          124900
+        ],
+        "gold_answer": "16090",
+        "gold_first_token_logprob": -12.693984508514404,
+        "gold_first_token_rank": 1,
+        "kv_bytes_per_token": 10220,
+        "memory_bytes": 47696688,
+        "peak_memory_bytes": 3744645120,
+        "predicted_answer": "16090",
+        "recon_error_final": 0.6126213371753693,
+        "recon_error_trajectory": [
+          0.6126213371753693
+        ],
+        "sample_id": "conditional_L8192_d0p1_i4_9c604028",
+        "task_kind": "conditional",
+        "trust_scaled_count": 0
+      },
+      "score": {
+        "correct": true,
+        "gold_code": "16090",
+        "gold_logprob": -12.693984508514404,
+        "gold_probability": 0.9666322829236569,
+        "gold_rank": 1,
+        "logprobs": {
+          "16090": -12.693984508514404,
+          "29297": -18.52626609802246,
+          "34348": -16.568214416503906,
+          "42790": -17.220542430877686
+        },
+        "predicted_code": "16090",
+        "probabilities": {
+          "16090": 0.9666322829236569,
+          "29297": 0.0028335676397078257,
+          "34348": 0.02007726839160347,
+          "42790": 0.010456881045031856
+        }
+      },
+      "score_s": 0.3657573329983279
+    },
+    "C4_memory_w1": {
+      "arm_id": "C4_memory_w1",
+      "build_s": 10.980521750025218,
+      "decode_s": 0.18096091601182707,
+      "effective_length": 2689,
+      "error": null,
+      "generated_code": null,
+      "generated_correct": false,
+      "prefill_s": 5.829788278788328e-07,
+      "result": {
+        "arm_id": "C4_memory_w1",
+        "condition_number_final": 8903079.875669833,
+        "context_length": 8192,
+        "depth": 0.1,
+        "diagnostics": {
+          "attribute": "north",
+          "build": {
+            "block_ranges": [
+              [
+                128,
+                640
+              ],
+              [
+                640,
+                1152
+              ],
+              [
+                1152,
+                1664
+              ],
+              [
+                1664,
+                2176
+              ],
+              [
+                2176,
+                2688
+              ],
+              [
+                2688,
+                3200
+              ],
+              [
+                3200,
+                3712
+              ],
+              [
+                3712,
+                4224
+              ],
+              [
+                4224,
+                4736
+              ],
+              [
+                4736,
+                5248
+              ],
+              [
+                5248,
+                5760
+              ],
+              [
+                5760,
+                6161
+              ]
+            ],
+            "build_seconds": 10.980521750025218,
+            "condition_checks": {
+              "10": [
+                18008871.865464788
+              ],
+              "14": [
+                797457.8350600036
+              ],
+              "18": [
+                Infinity
+              ],
+              "2": [
+                21021000.065088913
+              ],
+              "22": [
+                3081795.833181564
+              ],
+              "6": [
+                587761.2914686324
+              ]
+            },
+            "forgetting_events": 4,
+            "importances": [
+              4.417635381221771,
+              4.214168389638265,
+              3.8095412651697793,
+              4.284381290276845,
+              4.269537587960561,
+              4.214505076408386,
+              3.824394961198171,
+              4.095220943291982,
+              3.917321582635244,
+              3.81282502412796,
+              3.8696760137875876,
+              3.763563414414724
+            ],
+            "slot_offsets": [
+              0,
+              54,
+              225,
+              252,
+              283,
+              311,
+              342,
+              375,
+              406,
+              436,
+              462,
+              489
+            ],
+            "slots_per_block": [
+              54,
+              171,
+              27,
+              31,
+              28,
+              31,
+              33,
+              31,
+              30,
+              26,
+              27,
+              23
+            ]
+          },
+          "build_s": 10.980521750025218,
+          "cache_bytes": 83723056,
+          "candidate_logprobs": {
+            "16090": -12.697686195373535,
+            "29297": -18.581575393676758,
+            "34348": -16.533903121948242,
+            "42790": -17.221105098724365
+          },
+          "candidate_probabilities": {
+            "16090": 0.9659867722541071,
+            "29297": 0.0026892462301227995,
+            "34348": 0.020841229540838415,
+            "42790": 0.010482751974931578
+          },
+          "context_token_sha256": "9c6040287a00f95542b84f5da6ad9913e26768bd42e9b4d13569eee6a09841f5",
+          "correct_index": 1,
+          "decode_s": 0.18096091601182707,
+          "distance_from_end": 7373,
+          "effective_length": 2689,
+          "eta_final": 0.05,
+          "eta_ratio": 1.0,
+          "eta_steps": 1,
+          "expected_answer_text": "16090",
+          "generated_code": null,
+          "generated_correct": false,
+          "gold_candidate_probability": 0.9659867722541071,
+          "gold_candidate_rank": 1,
+          "needle_position": 819,
+          "options": [
+            "42790",
+            "16090",
+            "34348",
+            "29297"
+          ],
+          "owner": "archivist",
+          "prefill_s": 5.829788278788328e-07,
+          "score_s": 0.8897917499998584,
+          "step_entropy_mean": 4.122955918312073
+        },
+        "elapsed_s": 12.051274999015732,
+        "exact_match": true,
+        "generated_text": "0",
+        "generated_token_ids": [
+          24,
+          124900
+        ],
+        "gold_answer": "16090",
+        "gold_first_token_logprob": -12.697686195373535,
+        "gold_first_token_rank": 1,
+        "kv_bytes_per_token": 10220,
+        "memory_bytes": 47696688,
+        "peak_memory_bytes": 3811753984,
+        "predicted_answer": "16090",
+        "recon_error_final": 0.6143085012833277,
+        "recon_error_trajectory": [
+          0.6143085012833277
+        ],
+        "sample_id": "conditional_L8192_d0p1_i4_9c604028",
+        "task_kind": "conditional",
+        "trust_scaled_count": 0
+      },
+      "score": {
+        "correct": true,
+        "gold_code": "16090",
+        "gold_logprob": -12.697686195373535,
+        "gold_probability": 0.9659867722541071,
+        "gold_rank": 1,
+        "logprobs": {
+          "16090": -12.697686195373535,
+          "29297": -18.581575393676758,
+          "34348": -16.533903121948242,
+          "42790": -17.221105098724365
+        },
+        "predicted_code": "16090",
+        "probabilities": {
+          "16090": 0.9659867722541071,
+          "29297": 0.0026892462301227995,
+          "34348": 0.020841229540838415,
+          "42790": 0.010482751974931578
+        }
+      },
+      "score_s": 0.8897917499998584
+    }
+  },
+  "build_s": 10.980521750025218,
+  "error": null,
+  "prefill_s": 19.559725082974182,
+  "sample": {
+    "context_length": 8192,
+    "depth": 0.1,
+    "gold_answer": "16090",
+    "metadata": {
+      "attribute": "north",
+      "code": "16090",
+      "context_token_sha256": "9c6040287a00f95542b84f5da6ad9913e26768bd42e9b4d13569eee6a09841f5",
+      "correct_index": 1,
+      "distance_from_end": 7373,
+      "filler_seed": 7101,
+      "needle_position": 819,
+      "needle_positions": [
+        [
+          819,
+          843
+        ]
+      ],
+      "needle_seed": 9107,
+      "options": [
+        "42790",
+        "16090",
+        "34348",
+        "29297"
+      ],
+      "owner": "archivist",
+      "sentences": [
+        " The north passkey for archivist is 16090.",
+        " The red passkey for archivist is 42790."
+      ],
+      "task_index": 4
+    },
+    "prompt_tokens": 8209,
+    "sample_id": "conditional_L8192_d0p1_i4_9c604028",
+    "task_kind": "conditional"
+  }
+}

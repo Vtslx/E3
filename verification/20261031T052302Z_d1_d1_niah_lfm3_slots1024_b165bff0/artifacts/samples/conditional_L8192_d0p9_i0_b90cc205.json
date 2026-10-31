@@ -1,0 +1,753 @@
+{
+  "arms": {
+    "C0_full": {
+      "arm_id": "C0_full",
+      "build_s": 0.0,
+      "decode_s": 1.154237041977467,
+      "effective_length": 8223,
+      "error": null,
+      "generated_code": "37665",
+      "generated_correct": true,
+      "prefill_s": 11.368424082989804,
+      "result": {
+        "arm_id": "C0_full",
+        "condition_number_final": NaN,
+        "context_length": 8192,
+        "depth": 0.9,
+        "diagnostics": {
+          "attribute": "blue",
+          "build": {},
+          "build_s": 0.0,
+          "cache_bytes": 104028160,
+          "candidate_logprobs": {
+            "32984": -21.425865173339844,
+            "37665": -0.009939181676600128,
+            "61616": -17.611227989196777,
+            "69046": -12.34073020145297
+          },
+          "candidate_probabilities": {
+            "32984": 5.002413526994662e-10,
+            "37665": 0.9999955631008889,
+            "61616": 2.269109581109245e-08,
+            "69046": 4.41370777393735e-06
+          },
+          "context_token_sha256": "b90cc20564dca7a10ab1643fd272b33232df08338199b02d87cca20dd5ea6659",
+          "correct_index": 2,
+          "decode_s": 1.154237041977467,
+          "distance_from_end": 819,
+          "effective_length": 8223,
+          "eta_final": 0.05,
+          "eta_ratio": 1.0,
+          "eta_steps": 1,
+          "expected_answer_text": "37665",
+          "generated_code": "37665",
+          "generated_correct": true,
+          "gold_candidate_probability": 0.9999955631008889,
+          "gold_candidate_rank": 1,
+          "needle_position": 7373,
+          "options": [
+            "32984",
+            "61616",
+            "37665",
+            "69046"
+          ],
+          "owner": "registrar",
+          "prefill_s": 11.368424082989804,
+          "score_s": 0.5571965000126511,
+          "step_entropy_mean": 0.3056482404572307
+        },
+        "elapsed_s": 13.079857624979923,
+        "exact_match": true,
+        "generated_text": "37665\nQuestion: What is the red passkey for the registrar?\nAnswer",
+        "generated_token_ids": [
+          29786,
+          2257,
+          207,
+          36508,
+          34,
+          3246,
+          355,
+          278,
+          2959,
+          1729,
+          4016,
+          374,
+          278,
+          122618,
+          1283,
+          39630
+        ],
+        "gold_answer": "37665",
+        "gold_first_token_logprob": -0.009939181676600128,
+        "gold_first_token_rank": 1,
+        "kv_bytes_per_token": 12698,
+        "memory_bytes": 0,
+        "peak_memory_bytes": 3939680256,
+        "predicted_answer": "37665",
+        "recon_error_final": NaN,
+        "recon_error_trajectory": [],
+        "sample_id": "conditional_L8192_d0p9_i0_b90cc205",
+        "task_kind": "conditional",
+        "trust_scaled_count": 0
+      },
+      "score": {
+        "correct": true,
+        "gold_code": "37665",
+        "gold_logprob": -0.009939181676600128,
+        "gold_probability": 0.9999955631008889,
+        "gold_rank": 1,
+        "logprobs": {
+          "32984": -21.425865173339844,
+          "37665": -0.009939181676600128,
+          "61616": -17.611227989196777,
+          "69046": -12.34073020145297
+        },
+        "predicted_code": "37665",
+        "probabilities": {
+          "32984": 5.002413526994662e-10,
+          "37665": 0.9999955631008889,
+          "61616": 2.269109581109245e-08,
+          "69046": 4.41370777393735e-06
+        }
+      },
+      "score_s": 0.5571965000126511
+    },
+    "C1_stream": {
+      "arm_id": "C1_stream",
+      "build_s": 0.0,
+      "decode_s": 1.0988764579815324,
+      "effective_length": 2191,
+      "error": null,
+      "generated_code": "37665",
+      "generated_correct": true,
+      "prefill_s": 14.046626750001451,
+      "result": {
+        "arm_id": "C1_stream",
+        "condition_number_final": NaN,
+        "context_length": 8192,
+        "depth": 0.9,
+        "diagnostics": {
+          "attribute": "blue",
+          "build": {},
+          "build_s": 0.0,
+          "cache_bytes": 29906944,
+          "candidate_logprobs": {
+            "32984": -19.94139337539673,
+            "37665": -0.014113099838141352,
+            "61616": -16.7671160697937,
+            "69046": -11.66674691811204
+          },
+          "candidate_probabilities": {
+            "32984": 2.216605141927102e-09,
+            "37665": 0.9999912487433218,
+            "61616": 5.2997996751478705e-08,
+            "69046": 8.696042076363011e-06
+          },
+          "context_token_sha256": "b90cc20564dca7a10ab1643fd272b33232df08338199b02d87cca20dd5ea6659",
+          "correct_index": 2,
+          "decode_s": 1.0988764579815324,
+          "distance_from_end": 819,
+          "effective_length": 2191,
+          "eta_final": 0.05,
+          "eta_ratio": 1.0,
+          "eta_steps": 1,
+          "expected_answer_text": "37665",
+          "generated_code": "37665",
+          "generated_correct": true,
+          "gold_candidate_probability": 0.9999912487433218,
+          "gold_candidate_rank": 1,
+          "needle_position": 7373,
+          "options": [
+            "32984",
+            "61616",
+            "37665",
+            "69046"
+          ],
+          "owner": "registrar",
+          "prefill_s": 14.046626750001451,
+          "score_s": 0.4912810419918969,
+          "step_entropy_mean": 0.33237574936356395
+        },
+        "elapsed_s": 15.63678424997488,
+        "exact_match": true,
+        "generated_text": "37665\nQuestion: What is the red passkey for the registrar?\nAnswer",
+        "generated_token_ids": [
+          29786,
+          2257,
+          207,
+          36508,
+          34,
+          3246,
+          355,
+          278,
+          2959,
+          1729,
+          4016,
+          374,
+          278,
+          122618,
+          1283,
+          39630
+        ],
+        "gold_answer": "37665",
+        "gold_first_token_logprob": -0.014113099838141352,
+        "gold_first_token_rank": 1,
+        "kv_bytes_per_token": 3650,
+        "memory_bytes": 0,
+        "peak_memory_bytes": 3711090688,
+        "predicted_answer": "37665",
+        "recon_error_final": NaN,
+        "recon_error_trajectory": [],
+        "sample_id": "conditional_L8192_d0p9_i0_b90cc205",
+        "task_kind": "conditional",
+        "trust_scaled_count": 0
+      },
+      "score": {
+        "correct": true,
+        "gold_code": "37665",
+        "gold_logprob": -0.014113099838141352,
+        "gold_probability": 0.9999912487433218,
+        "gold_rank": 1,
+        "logprobs": {
+          "32984": -19.94139337539673,
+          "37665": -0.014113099838141352,
+          "61616": -16.7671160697937,
+          "69046": -11.66674691811204
+        },
+        "predicted_code": "37665",
+        "probabilities": {
+          "32984": 2.216605141927102e-09,
+          "37665": 0.9999912487433218,
+          "61616": 5.2997996751478705e-08,
+          "69046": 8.696042076363011e-06
+        }
+      },
+      "score_s": 0.4912810419918969
+    },
+    "C3_memory": {
+      "arm_id": "C3_memory",
+      "build_s": 13.616405250009848,
+      "decode_s": 2.642805082985433,
+      "effective_length": 3215,
+      "error": null,
+      "generated_code": "37665",
+      "generated_correct": true,
+      "prefill_s": 1.420799526385963e-05,
+      "result": {
+        "arm_id": "C3_memory",
+        "condition_number_final": Infinity,
+        "context_length": 8192,
+        "depth": 0.9,
+        "diagnostics": {
+          "attribute": "blue",
+          "build": {
+            "block_ranges": [
+              [
+                128,
+                640
+              ],
+              [
+                640,
+                1152
+              ],
+              [
+                1152,
+                1664
+              ],
+              [
+                1664,
+                2176
+              ],
+              [
+                2176,
+                2688
+              ],
+              [
+                2688,
+                3200
+              ],
+              [
+                3200,
+                3712
+              ],
+              [
+                3712,
+                4224
+              ],
+              [
+                4224,
+                4736
+              ],
+              [
+                4736,
+                5248
+              ],
+              [
+                5248,
+                5760
+              ],
+              [
+                5760,
+                6160
+              ]
+            ],
+            "build_seconds": 13.616405250009848,
+            "condition_checks": {
+              "10": [
+                527.0581062824195
+              ],
+              "14": [
+                541.001000301769
+              ],
+              "18": [
+                131602.11801217412
+              ],
+              "2": [
+                4587.736222231682
+              ],
+              "22": [
+                1551.27482430021
+              ],
+              "6": [
+                779.6419937481343
+              ]
+            },
+            "forgetting_events": 0,
+            "importances": [
+              4.2848958770434065,
+              3.966186841328939,
+              4.2420313358306885,
+              4.1255184809366865,
+              4.180428961912791,
+              4.0553244551022845,
+              4.158561527729034,
+              3.8793039520581565,
+              4.143964370091756,
+              3.8960217436154685,
+              4.0859066645304365,
+              4.284905433654785
+            ],
+            "slot_offsets": [
+              0,
+              159,
+              239,
+              310,
+              381,
+              456,
+              549,
+              659,
+              749,
+              840,
+              904,
+              973
+            ],
+            "slots_per_block": [
+              159,
+              80,
+              71,
+              71,
+              75,
+              93,
+              110,
+              90,
+              91,
+              64,
+              69,
+              51
+            ]
+          },
+          "build_s": 13.616405250009848,
+          "cache_bytes": 115376896,
+          "candidate_logprobs": {
+            "32984": -20.146678924560547,
+            "37665": -0.013171981030609459,
+            "61616": -16.993950843811035,
+            "69046": -12.420207314193249
+          },
+          "candidate_probabilities": {
+            "32984": 1.8035460589887203e-09,
+            "37665": 0.999995866295965,
+            "61616": 4.2202642621901644e-08,
+            "69046": 4.089697846192017e-06
+          },
+          "context_token_sha256": "b90cc20564dca7a10ab1643fd272b33232df08338199b02d87cca20dd5ea6659",
+          "correct_index": 2,
+          "decode_s": 2.642805082985433,
+          "distance_from_end": 819,
+          "effective_length": 3215,
+          "eta_final": 0.05,
+          "eta_ratio": 1.0,
+          "eta_steps": 1,
+          "expected_answer_text": "37665",
+          "generated_code": "37665",
+          "generated_correct": true,
+          "gold_candidate_probability": 0.999995866295965,
+          "gold_candidate_rank": 1,
+          "needle_position": 7373,
+          "options": [
+            "32984",
+            "61616",
+            "37665",
+            "69046"
+          ],
+          "owner": "registrar",
+          "prefill_s": 1.420799526385963e-05,
+          "score_s": 0.5367804580018856,
+          "step_entropy_mean": 0.33354653921560384
+        },
+        "elapsed_s": 16.79600499899243,
+        "exact_match": true,
+        "generated_text": "37665\nQuestion: What is the red passkey for the registrar?\nAnswer",
+        "generated_token_ids": [
+          29786,
+          2257,
+          207,
+          36508,
+          34,
+          3246,
+          355,
+          278,
+          2959,
+          1729,
+          4016,
+          374,
+          278,
+          122618,
+          1283,
+          39630
+        ],
+        "gold_answer": "37665",
+        "gold_first_token_logprob": -0.013171981030609459,
+        "gold_first_token_rank": 1,
+        "kv_bytes_per_token": 14084,
+        "memory_bytes": 72887040,
+        "peak_memory_bytes": 3878862848,
+        "predicted_answer": "37665",
+        "recon_error_final": 0.5934305240710577,
+        "recon_error_trajectory": [
+          0.5910834968090057,
+          0.5912846773862839,
+          0.5915578554073969,
+          0.5917858779430389,
+          0.5918519347906113,
+          0.5919264753659567,
+          0.5920647084712982,
+          0.5922346462806066,
+          0.5924575179815292,
+          0.5925583640734354,
+          0.5927960326274236,
+          0.5929594139258066,
+          0.5930293798446655,
+          0.5932266761859258,
+          0.5934305240710577
+        ],
+        "sample_id": "conditional_L8192_d0p9_i0_b90cc205",
+        "task_kind": "conditional",
+        "trust_scaled_count": 0
+      },
+      "score": {
+        "correct": true,
+        "gold_code": "37665",
+        "gold_logprob": -0.013171981030609459,
+        "gold_probability": 0.999995866295965,
+        "gold_rank": 1,
+        "logprobs": {
+          "32984": -20.146678924560547,
+          "37665": -0.013171981030609459,
+          "61616": -16.993950843811035,
+          "69046": -12.420207314193249
+        },
+        "predicted_code": "37665",
+        "probabilities": {
+          "32984": 1.8035460589887203e-09,
+          "37665": 0.999995866295965,
+          "61616": 4.2202642621901644e-08,
+          "69046": 4.089697846192017e-06
+        }
+      },
+      "score_s": 0.5367804580018856
+    },
+    "C4_memory_w1": {
+      "arm_id": "C4_memory_w1",
+      "build_s": 13.616405250009848,
+      "decode_s": 2.6496921249781735,
+      "effective_length": 3215,
+      "error": null,
+      "generated_code": "37665",
+      "generated_correct": true,
+      "prefill_s": 1.420799526385963e-05,
+      "result": {
+        "arm_id": "C4_memory_w1",
+        "condition_number_final": 469.6718039658156,
+        "context_length": 8192,
+        "depth": 0.9,
+        "diagnostics": {
+          "attribute": "blue",
+          "build": {
+            "block_ranges": [
+              [
+                128,
+                640
+              ],
+              [
+                640,
+                1152
+              ],
+              [
+                1152,
+                1664
+              ],
+              [
+                1664,
+                2176
+              ],
+              [
+                2176,
+                2688
+              ],
+              [
+                2688,
+                3200
+              ],
+              [
+                3200,
+                3712
+              ],
+              [
+                3712,
+                4224
+              ],
+              [
+                4224,
+                4736
+              ],
+              [
+                4736,
+                5248
+              ],
+              [
+                5248,
+                5760
+              ],
+              [
+                5760,
+                6160
+              ]
+            ],
+            "build_seconds": 13.616405250009848,
+            "condition_checks": {
+              "10": [
+                527.0581062824195
+              ],
+              "14": [
+                541.001000301769
+              ],
+              "18": [
+                131602.11801217412
+              ],
+              "2": [
+                4587.736222231682
+              ],
+              "22": [
+                1551.27482430021
+              ],
+              "6": [
+                779.6419937481343
+              ]
+            },
+            "forgetting_events": 0,
+            "importances": [
+              4.2848958770434065,
+              3.966186841328939,
+              4.2420313358306885,
+              4.1255184809366865,
+              4.180428961912791,
+              4.0553244551022845,
+              4.158561527729034,
+              3.8793039520581565,
+              4.143964370091756,
+              3.8960217436154685,
+              4.0859066645304365,
+              4.284905433654785
+            ],
+            "slot_offsets": [
+              0,
+              159,
+              239,
+              310,
+              381,
+              456,
+              549,
+              659,
+              749,
+              840,
+              904,
+              973
+            ],
+            "slots_per_block": [
+              159,
+              80,
+              71,
+              71,
+              75,
+              93,
+              110,
+              90,
+              91,
+              64,
+              69,
+              51
+            ]
+          },
+          "build_s": 13.616405250009848,
+          "cache_bytes": 115376896,
+          "candidate_logprobs": {
+            "32984": -20.182780265808105,
+            "37665": -0.013175435713492334,
+            "61616": -16.95702838897705,
+            "69046": -12.419447187334299
+          },
+          "candidate_probabilities": {
+            "32984": 1.7396028994812473e-09,
+            "37665": 0.9999958616484166,
+            "61616": 4.379014295309993e-08,
+            "69046": 4.092821837523906e-06
+          },
+          "context_token_sha256": "b90cc20564dca7a10ab1643fd272b33232df08338199b02d87cca20dd5ea6659",
+          "correct_index": 2,
+          "decode_s": 2.6496921249781735,
+          "distance_from_end": 819,
+          "effective_length": 3215,
+          "eta_final": 0.05,
+          "eta_ratio": 1.0,
+          "eta_steps": 1,
+          "expected_answer_text": "37665",
+          "generated_code": "37665",
+          "generated_correct": true,
+          "gold_candidate_probability": 0.9999958616484166,
+          "gold_candidate_rank": 1,
+          "needle_position": 7373,
+          "options": [
+            "32984",
+            "61616",
+            "37665",
+            "69046"
+          ],
+          "owner": "registrar",
+          "prefill_s": 1.420799526385963e-05,
+          "score_s": 1.780503125017276,
+          "step_entropy_mean": 0.3255556342046475
+        },
+        "elapsed_s": 18.04661470800056,
+        "exact_match": true,
+        "generated_text": "37665\nQuestion: What is the red passkey for the registrar?\nAnswer",
+        "generated_token_ids": [
+          29786,
+          2257,
+          207,
+          36508,
+          34,
+          3246,
+          355,
+          278,
+          2959,
+          1729,
+          4016,
+          374,
+          278,
+          122618,
+          1283,
+          39630
+        ],
+        "gold_answer": "37665",
+        "gold_first_token_logprob": -0.013175435713492334,
+        "gold_first_token_rank": 1,
+        "kv_bytes_per_token": 14084,
+        "memory_bytes": 72887040,
+        "peak_memory_bytes": 3954360320,
+        "predicted_answer": "37665",
+        "recon_error_final": 0.6252169410387675,
+        "recon_error_trajectory": [
+          0.5928552548090616,
+          0.5948855380217234,
+          0.5970368931690851,
+          0.5991998612880707,
+          0.6012573192516962,
+          0.6033745209376017,
+          0.6056040028731028,
+          0.6079117904106776,
+          0.610311691959699,
+          0.6126421093940735,
+          0.6151379694541296,
+          0.6176056663195292,
+          0.6200316598018011,
+          0.6226080060005188,
+          0.6252169410387675
+        ],
+        "sample_id": "conditional_L8192_d0p9_i0_b90cc205",
+        "task_kind": "conditional",
+        "trust_scaled_count": 0
+      },
+      "score": {
+        "correct": true,
+        "gold_code": "37665",
+        "gold_logprob": -0.013175435713492334,
+        "gold_probability": 0.9999958616484166,
+        "gold_rank": 1,
+        "logprobs": {
+          "32984": -20.182780265808105,
+          "37665": -0.013175435713492334,
+          "61616": -16.95702838897705,
+          "69046": -12.419447187334299
+        },
+        "predicted_code": "37665",
+        "probabilities": {
+          "32984": 1.7396028994812473e-09,
+          "37665": 0.9999958616484166,
+          "61616": 4.379014295309993e-08,
+          "69046": 4.092821837523906e-06
+        }
+      },
+      "score_s": 1.780503125017276
+    }
+  },
+  "build_s": 13.616405250009848,
+  "error": null,
+  "prefill_s": 25.41506504098652,
+  "sample": {
+    "context_length": 8192,
+    "depth": 0.9,
+    "gold_answer": "37665",
+    "metadata": {
+      "attribute": "blue",
+      "code": "37665",
+      "context_token_sha256": "b90cc20564dca7a10ab1643fd272b33232df08338199b02d87cca20dd5ea6659",
+      "correct_index": 2,
+      "distance_from_end": 819,
+      "filler_seed": 7101,
+      "needle_position": 7373,
+      "needle_positions": [
+        [
+          7373,
+          7395
+        ]
+      ],
+      "needle_seed": 9107,
+      "options": [
+        "32984",
+        "61616",
+        "37665",
+        "69046"
+      ],
+      "owner": "registrar",
+      "sentences": [
+        " The blue passkey for registrar is 37665.",
+        " The red passkey for registrar is 69046."
+      ],
+      "task_index": 0
+    },
+    "prompt_tokens": 8208,
+    "sample_id": "conditional_L8192_d0p9_i0_b90cc205",
+    "task_kind": "conditional"
+  }
+}

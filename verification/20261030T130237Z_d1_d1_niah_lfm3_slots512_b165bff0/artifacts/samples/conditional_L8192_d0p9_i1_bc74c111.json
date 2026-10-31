@@ -1,0 +1,753 @@
+{
+  "arms": {
+    "C0_full": {
+      "arm_id": "C0_full",
+      "build_s": 0.0,
+      "decode_s": 0.8261915830080397,
+      "effective_length": 8224,
+      "error": null,
+      "generated_code": "58645",
+      "generated_correct": true,
+      "prefill_s": 9.600028749991907,
+      "result": {
+        "arm_id": "C0_full",
+        "condition_number_final": NaN,
+        "context_length": 8192,
+        "depth": 0.9,
+        "diagnostics": {
+          "attribute": "red",
+          "build": {},
+          "build_s": 0.0,
+          "cache_bytes": 104040448,
+          "candidate_logprobs": {
+            "25565": -21.775392532348633,
+            "58645": -0.011418062931625172,
+            "58772": -5.011664387246128,
+            "72651": -19.858109951019287
+          },
+          "candidate_probabilities": {
+            "25565": 3.5084093485374354e-10,
+            "58645": 0.9933087837356438,
+            "58772": 0.006691213526938007,
+            "72651": 2.386577296594689e-09
+          },
+          "context_token_sha256": "bc74c1116be653783ba974182c86f0030b554dcb605d27f798a27d73a3e8e412",
+          "correct_index": 2,
+          "decode_s": 0.8261915830080397,
+          "distance_from_end": 819,
+          "effective_length": 8224,
+          "eta_final": 0.05,
+          "eta_ratio": 1.0,
+          "eta_steps": 1,
+          "expected_answer_text": "58645",
+          "generated_code": "58645",
+          "generated_correct": true,
+          "gold_candidate_probability": 0.9933087837356438,
+          "gold_candidate_rank": 1,
+          "needle_position": 7373,
+          "options": [
+            "58772",
+            "25565",
+            "58645",
+            "72651"
+          ],
+          "owner": "archivist",
+          "prefill_s": 9.600028749991907,
+          "score_s": 0.40525145799620077,
+          "step_entropy_mean": 0.30826554656232474
+        },
+        "elapsed_s": 10.831471790996147,
+        "exact_match": true,
+        "generated_text": "58645\n\nQuestion: What is the blue passkey for the archivist?\n",
+        "generated_token_ids": [
+          34316,
+          2136,
+          8,
+          36508,
+          34,
+          3246,
+          355,
+          278,
+          6542,
+          1729,
+          4016,
+          374,
+          278,
+          3386,
+          50270,
+          1283
+        ],
+        "gold_answer": "58645",
+        "gold_first_token_logprob": -0.011418062931625172,
+        "gold_first_token_rank": 1,
+        "kv_bytes_per_token": 12700,
+        "memory_bytes": 0,
+        "peak_memory_bytes": 3948068864,
+        "predicted_answer": "58645",
+        "recon_error_final": NaN,
+        "recon_error_trajectory": [],
+        "sample_id": "conditional_L8192_d0p9_i1_bc74c111",
+        "task_kind": "conditional",
+        "trust_scaled_count": 0
+      },
+      "score": {
+        "correct": true,
+        "gold_code": "58645",
+        "gold_logprob": -0.011418062931625172,
+        "gold_probability": 0.9933087837356438,
+        "gold_rank": 1,
+        "logprobs": {
+          "25565": -21.775392532348633,
+          "58645": -0.011418062931625172,
+          "58772": -5.011664387246128,
+          "72651": -19.858109951019287
+        },
+        "predicted_code": "58645",
+        "probabilities": {
+          "25565": 3.5084093485374354e-10,
+          "58645": 0.9933087837356438,
+          "58772": 0.006691213526938007,
+          "72651": 2.386577296594689e-09
+        }
+      },
+      "score_s": 0.40525145799620077
+    },
+    "C1_stream": {
+      "arm_id": "C1_stream",
+      "build_s": 0.0,
+      "decode_s": 0.7940981670108158,
+      "effective_length": 2191,
+      "error": null,
+      "generated_code": "58645",
+      "generated_correct": true,
+      "prefill_s": 9.896257415995933,
+      "result": {
+        "arm_id": "C1_stream",
+        "condition_number_final": NaN,
+        "context_length": 8192,
+        "depth": 0.9,
+        "diagnostics": {
+          "attribute": "red",
+          "build": {},
+          "build_s": 0.0,
+          "cache_bytes": 29906944,
+          "candidate_logprobs": {
+            "25565": -20.881936073303223,
+            "58645": -0.009945272642653435,
+            "58772": -6.9544940097257495,
+            "72651": -17.92496156692505
+          },
+          "candidate_probabilities": {
+            "25565": 8.609762216164065e-10,
+            "58645": 0.9990370355562588,
+            "58772": 0.0009629470178631435,
+            "72651": 1.6564901910978983e-08
+          },
+          "context_token_sha256": "bc74c1116be653783ba974182c86f0030b554dcb605d27f798a27d73a3e8e412",
+          "correct_index": 2,
+          "decode_s": 0.7940981670108158,
+          "distance_from_end": 819,
+          "effective_length": 2191,
+          "eta_final": 0.05,
+          "eta_ratio": 1.0,
+          "eta_steps": 1,
+          "expected_answer_text": "58645",
+          "generated_code": "58645",
+          "generated_correct": true,
+          "gold_candidate_probability": 0.9990370355562588,
+          "gold_candidate_rank": 1,
+          "needle_position": 7373,
+          "options": [
+            "58772",
+            "25565",
+            "58645",
+            "72651"
+          ],
+          "owner": "archivist",
+          "prefill_s": 9.896257415995933,
+          "score_s": 0.33672937500523403,
+          "step_entropy_mean": 0.2842892808112083
+        },
+        "elapsed_s": 11.027084958011983,
+        "exact_match": true,
+        "generated_text": "58645\n\nQuestion: What is the blue passkey for the archivist?\n",
+        "generated_token_ids": [
+          34316,
+          2136,
+          8,
+          36508,
+          34,
+          3246,
+          355,
+          278,
+          6542,
+          1729,
+          4016,
+          374,
+          278,
+          3386,
+          50270,
+          1283
+        ],
+        "gold_answer": "58645",
+        "gold_first_token_logprob": -0.009945272642653435,
+        "gold_first_token_rank": 1,
+        "kv_bytes_per_token": 3650,
+        "memory_bytes": 0,
+        "peak_memory_bytes": 3711090688,
+        "predicted_answer": "58645",
+        "recon_error_final": NaN,
+        "recon_error_trajectory": [],
+        "sample_id": "conditional_L8192_d0p9_i1_bc74c111",
+        "task_kind": "conditional",
+        "trust_scaled_count": 0
+      },
+      "score": {
+        "correct": true,
+        "gold_code": "58645",
+        "gold_logprob": -0.009945272642653435,
+        "gold_probability": 0.9990370355562588,
+        "gold_rank": 1,
+        "logprobs": {
+          "25565": -20.881936073303223,
+          "58645": -0.009945272642653435,
+          "58772": -6.9544940097257495,
+          "72651": -17.92496156692505
+        },
+        "predicted_code": "58645",
+        "probabilities": {
+          "25565": 8.609762216164065e-10,
+          "58645": 0.9990370355562588,
+          "58772": 0.0009629470178631435,
+          "72651": 1.6564901910978983e-08
+        }
+      },
+      "score_s": 0.33672937500523403
+    },
+    "C3_memory": {
+      "arm_id": "C3_memory",
+      "build_s": 10.843805040989537,
+      "decode_s": 1.2984387500036974,
+      "effective_length": 2703,
+      "error": null,
+      "generated_code": "58645",
+      "generated_correct": true,
+      "prefill_s": 5.420006345957518e-07,
+      "result": {
+        "arm_id": "C3_memory",
+        "condition_number_final": Infinity,
+        "context_length": 8192,
+        "depth": 0.9,
+        "diagnostics": {
+          "attribute": "red",
+          "build": {
+            "block_ranges": [
+              [
+                128,
+                640
+              ],
+              [
+                640,
+                1152
+              ],
+              [
+                1152,
+                1664
+              ],
+              [
+                1664,
+                2176
+              ],
+              [
+                2176,
+                2688
+              ],
+              [
+                2688,
+                3200
+              ],
+              [
+                3200,
+                3712
+              ],
+              [
+                3712,
+                4224
+              ],
+              [
+                4224,
+                4736
+              ],
+              [
+                4736,
+                5248
+              ],
+              [
+                5248,
+                5760
+              ],
+              [
+                5760,
+                6161
+              ]
+            ],
+            "build_seconds": 10.843805040989537,
+            "condition_checks": {
+              "10": [
+                1226135.2779387576
+              ],
+              "14": [
+                155274.40691918004
+              ],
+              "18": [
+                Infinity
+              ],
+              "2": [
+                41666029.66124488
+              ],
+              "22": [
+                9066157.535418248
+              ],
+              "6": [
+                409669.3283956252
+              ]
+            },
+            "forgetting_events": 4,
+            "importances": [
+              4.289565364519755,
+              4.050011197725932,
+              3.850597302118937,
+              4.068301200866699,
+              4.0358395377794904,
+              4.0659754276275635,
+              4.058116257190704,
+              3.9574509263038635,
+              4.052409569422404,
+              4.035488228003184,
+              4.045830647150676,
+              3.9834861954053244
+            ],
+            "slot_offsets": [
+              0,
+              77,
+              116,
+              150,
+              184,
+              221,
+              269,
+              324,
+              370,
+              417,
+              452,
+              486
+            ],
+            "slots_per_block": [
+              77,
+              39,
+              34,
+              34,
+              37,
+              48,
+              55,
+              46,
+              47,
+              35,
+              34,
+              26
+            ]
+          },
+          "build_s": 10.843805040989537,
+          "cache_bytes": 83895088,
+          "candidate_logprobs": {
+            "25565": -21.021263599395752,
+            "58645": -0.009578825440257788,
+            "58772": -7.143106277100742,
+            "72651": -18.06030511856079
+          },
+          "candidate_probabilities": {
+            "25565": 7.488500364009837e-10,
+            "58645": 0.9992027210704064,
+            "58772": 0.0007972637155989065,
+            "72651": 1.4465144773276412e-08
+          },
+          "context_token_sha256": "bc74c1116be653783ba974182c86f0030b554dcb605d27f798a27d73a3e8e412",
+          "correct_index": 2,
+          "decode_s": 1.2984387500036974,
+          "distance_from_end": 819,
+          "effective_length": 2703,
+          "eta_final": 0.05,
+          "eta_ratio": 1.0,
+          "eta_steps": 1,
+          "expected_answer_text": "58645",
+          "generated_code": "58645",
+          "generated_correct": true,
+          "gold_candidate_probability": 0.9992027210704064,
+          "gold_candidate_rank": 1,
+          "needle_position": 7373,
+          "options": [
+            "58772",
+            "25565",
+            "58645",
+            "72651"
+          ],
+          "owner": "archivist",
+          "prefill_s": 5.420006345957518e-07,
+          "score_s": 0.339813917002175,
+          "step_entropy_mean": 0.28527660309919156
+        },
+        "elapsed_s": 12.482058249996044,
+        "exact_match": true,
+        "generated_text": "58645\n\nQuestion: What is the blue passkey for the archivist?\n",
+        "generated_token_ids": [
+          34316,
+          2136,
+          8,
+          36508,
+          34,
+          3246,
+          355,
+          278,
+          6542,
+          1729,
+          4016,
+          374,
+          278,
+          3386,
+          50270,
+          1283
+        ],
+        "gold_answer": "58645",
+        "gold_first_token_logprob": -0.009578825440257788,
+        "gold_first_token_rank": 1,
+        "kv_bytes_per_token": 10241,
+        "memory_bytes": 47696688,
+        "peak_memory_bytes": 3753033728,
+        "predicted_answer": "58645",
+        "recon_error_final": 0.627575546503067,
+        "recon_error_trajectory": [
+          0.6254537204901377,
+          0.6256591230630875,
+          0.6258572489023209,
+          0.6260439306497574,
+          0.6261664628982544,
+          0.6262901971737543,
+          0.6264699945847193,
+          0.626601571838061,
+          0.626757433017095,
+          0.6269357651472092,
+          0.627124696969986,
+          0.6272739420334498,
+          0.6273233443498611,
+          0.6274294555187225,
+          0.627575546503067
+        ],
+        "sample_id": "conditional_L8192_d0p9_i1_bc74c111",
+        "task_kind": "conditional",
+        "trust_scaled_count": 0
+      },
+      "score": {
+        "correct": true,
+        "gold_code": "58645",
+        "gold_logprob": -0.009578825440257788,
+        "gold_probability": 0.9992027210704064,
+        "gold_rank": 1,
+        "logprobs": {
+          "25565": -21.021263599395752,
+          "58645": -0.009578825440257788,
+          "58772": -7.143106277100742,
+          "72651": -18.06030511856079
+        },
+        "predicted_code": "58645",
+        "probabilities": {
+          "25565": 7.488500364009837e-10,
+          "58645": 0.9992027210704064,
+          "58772": 0.0007972637155989065,
+          "72651": 1.4465144773276412e-08
+        }
+      },
+      "score_s": 0.339813917002175
+    },
+    "C4_memory_w1": {
+      "arm_id": "C4_memory_w1",
+      "build_s": 10.843805040989537,
+      "decode_s": 1.4920352500048466,
+      "effective_length": 2703,
+      "error": null,
+      "generated_code": "58645",
+      "generated_correct": true,
+      "prefill_s": 5.420006345957518e-07,
+      "result": {
+        "arm_id": "C4_memory_w1",
+        "condition_number_final": 2497923.6820760183,
+        "context_length": 8192,
+        "depth": 0.9,
+        "diagnostics": {
+          "attribute": "red",
+          "build": {
+            "block_ranges": [
+              [
+                128,
+                640
+              ],
+              [
+                640,
+                1152
+              ],
+              [
+                1152,
+                1664
+              ],
+              [
+                1664,
+                2176
+              ],
+              [
+                2176,
+                2688
+              ],
+              [
+                2688,
+                3200
+              ],
+              [
+                3200,
+                3712
+              ],
+              [
+                3712,
+                4224
+              ],
+              [
+                4224,
+                4736
+              ],
+              [
+                4736,
+                5248
+              ],
+              [
+                5248,
+                5760
+              ],
+              [
+                5760,
+                6161
+              ]
+            ],
+            "build_seconds": 10.843805040989537,
+            "condition_checks": {
+              "10": [
+                1226135.2779387576
+              ],
+              "14": [
+                155274.40691918004
+              ],
+              "18": [
+                Infinity
+              ],
+              "2": [
+                41666029.66124488
+              ],
+              "22": [
+                9066157.535418248
+              ],
+              "6": [
+                409669.3283956252
+              ]
+            },
+            "forgetting_events": 4,
+            "importances": [
+              4.289565364519755,
+              4.050011197725932,
+              3.850597302118937,
+              4.068301200866699,
+              4.0358395377794904,
+              4.0659754276275635,
+              4.058116257190704,
+              3.9574509263038635,
+              4.052409569422404,
+              4.035488228003184,
+              4.045830647150676,
+              3.9834861954053244
+            ],
+            "slot_offsets": [
+              0,
+              77,
+              116,
+              150,
+              184,
+              221,
+              269,
+              324,
+              370,
+              417,
+              452,
+              486
+            ],
+            "slots_per_block": [
+              77,
+              39,
+              34,
+              34,
+              37,
+              48,
+              55,
+              46,
+              47,
+              35,
+              34,
+              26
+            ]
+          },
+          "build_s": 10.843805040989537,
+          "cache_bytes": 83895088,
+          "candidate_logprobs": {
+            "25565": -21.056544303894043,
+            "58645": -0.009594908100552857,
+            "58772": -7.141946730203927,
+            "72651": -18.058247566223145
+          },
+          "candidate_probabilities": {
+            "25565": 7.229016520898898e-10,
+            "58645": 0.9992017839769722,
+            "58772": 0.0007982008049685036,
+            "72651": 1.4495157730855217e-08
+          },
+          "context_token_sha256": "bc74c1116be653783ba974182c86f0030b554dcb605d27f798a27d73a3e8e412",
+          "correct_index": 2,
+          "decode_s": 1.4920352500048466,
+          "distance_from_end": 819,
+          "effective_length": 2703,
+          "eta_final": 0.05,
+          "eta_ratio": 1.0,
+          "eta_steps": 1,
+          "expected_answer_text": "58645",
+          "generated_code": "58645",
+          "generated_correct": true,
+          "gold_candidate_probability": 0.9992017839769722,
+          "gold_candidate_rank": 1,
+          "needle_position": 7373,
+          "options": [
+            "58772",
+            "25565",
+            "58645",
+            "72651"
+          ],
+          "owner": "archivist",
+          "prefill_s": 5.420006345957518e-07,
+          "score_s": 0.9846212500124238,
+          "step_entropy_mean": 0.2857368905606563
+        },
+        "elapsed_s": 13.320462083007442,
+        "exact_match": true,
+        "generated_text": "58645\n\nQuestion: What is the blue passkey for the archivist?\n",
+        "generated_token_ids": [
+          34316,
+          2136,
+          8,
+          36508,
+          34,
+          3246,
+          355,
+          278,
+          6542,
+          1729,
+          4016,
+          374,
+          278,
+          3386,
+          50270,
+          1283
+        ],
+        "gold_answer": "58645",
+        "gold_first_token_logprob": -0.009594908100552857,
+        "gold_first_token_rank": 1,
+        "kv_bytes_per_token": 10241,
+        "memory_bytes": 47696688,
+        "peak_memory_bytes": 3811753984,
+        "predicted_answer": "58645",
+        "recon_error_final": 0.6559865375359853,
+        "recon_error_trajectory": [
+          0.6270566533009211,
+          0.6289141178131104,
+          0.6308074494202932,
+          0.6327365835507711,
+          0.6346432069937388,
+          0.6365941315889359,
+          0.6386366486549377,
+          0.6406729618708292,
+          0.6427741646766663,
+          0.6449318826198578,
+          0.6471345623334249,
+          0.6493312319119772,
+          0.651468833287557,
+          0.653692752122879,
+          0.6559865375359853
+        ],
+        "sample_id": "conditional_L8192_d0p9_i1_bc74c111",
+        "task_kind": "conditional",
+        "trust_scaled_count": 0
+      },
+      "score": {
+        "correct": true,
+        "gold_code": "58645",
+        "gold_logprob": -0.009594908100552857,
+        "gold_probability": 0.9992017839769722,
+        "gold_rank": 1,
+        "logprobs": {
+          "25565": -21.056544303894043,
+          "58645": -0.009594908100552857,
+          "58772": -7.141946730203927,
+          "72651": -18.058247566223145
+        },
+        "predicted_code": "58645",
+        "probabilities": {
+          "25565": 7.229016520898898e-10,
+          "58645": 0.9992017839769722,
+          "58772": 0.0007982008049685036,
+          "72651": 1.4495157730855217e-08
+        }
+      },
+      "score_s": 0.9846212500124238
+    }
+  },
+  "build_s": 10.843805040989537,
+  "error": null,
+  "prefill_s": 19.496286707988475,
+  "sample": {
+    "context_length": 8192,
+    "depth": 0.9,
+    "gold_answer": "58645",
+    "metadata": {
+      "attribute": "red",
+      "code": "58645",
+      "context_token_sha256": "bc74c1116be653783ba974182c86f0030b554dcb605d27f798a27d73a3e8e412",
+      "correct_index": 2,
+      "distance_from_end": 819,
+      "filler_seed": 7101,
+      "needle_position": 7373,
+      "needle_positions": [
+        [
+          7373,
+          7397
+        ]
+      ],
+      "needle_seed": 9107,
+      "options": [
+        "58772",
+        "25565",
+        "58645",
+        "72651"
+      ],
+      "owner": "archivist",
+      "sentences": [
+        " The red passkey for archivist is 58645.",
+        " The blue passkey for archivist is 58772."
+      ],
+      "task_index": 1
+    },
+    "prompt_tokens": 8209,
+    "sample_id": "conditional_L8192_d0p9_i1_bc74c111",
+    "task_kind": "conditional"
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "argv": [
+    ".venv/bin/sprm",
+    "verify",
+    "v1",
+    "--config",
+    "configs/experiments/d1_niah.yaml"
+  ],
+  "artifacts": {
+    "CLAIMS.md": {
+      "sha256": "ec23e716441af3de7cc29915e9a2ec91f31b6a73cb70d5a0b606674d4646b068",
+      "size": 414
+    },
+    "REPORT.md": {
+      "sha256": "665ddd139f3e52dd3afa0a42d65be2f1b24cf6686f7c463e2df798fb18707bac",
+      "size": 1207
+    },
+    "RESULT.json": {
+      "sha256": "f6da3772ee88bfdcece737b0d89d2d191ef8201dedfa8f03f40ce3e583335c5e",
+      "size": 3617
+    },
+    "artifacts/checks.json": {
+      "sha256": "3d58c94c61ab2e361012cb86e985d894844aa383fe3b6be746122506476e943f",
+      "size": 1942
+    },
+    "artifacts/details.json": {
+      "sha256": "b5c9523e7fccd6849fabfc5aa4b65405ad55edc2a607ad88d92b107ca634697e",
+      "size": 1196
+    },
+    "config.yaml": {
+      "sha256": "b165bff00822869b49072e77e385730d91936b9de38b5386e256721f88940504",
+      "size": 2363
+    },
+    "logs/events.jsonl": {
+      "sha256": "56cfe9e8b554b7b1e72b2aaab020c4fe52f22488528b60309df48e1fca8f63e5",
+      "size": 1740
+    },
+    "logs/stdout.log": {
+      "sha256": "56cfe9e8b554b7b1e72b2aaab020c4fe52f22488528b60309df48e1fca8f63e5",
+      "size": 1740
+    }
+  },
+  "config": {
+    "sha256": "b165bff00822869b49072e77e385730d91936b9de38b5386e256721f88940504",
+    "snapshot": "config.yaml"
+  },
+  "duration_s": 0.56,
+  "environment": {
+    "cpu_count": 10,
+    "cuda_available": false,
+    "machine": "arm64",
+    "mps_available": true,
+    "mps_built": true,
+    "mps_recommended_max_memory_bytes": 12713115648,
+    "platform": "macOS-27.2-arm64-arm-64bit-Mach-O",
+    "processor": "arm",
+    "python": "3.14.6",
+    "python_executable": "/Volumes/Net/E3/.venv/bin/python",
+    "ram_total_bytes": 17179869184,
+    "timestamp_utc": "2026-10-30T12:59:35Z",
+    "torch": "2.15.0",
+    "transformers": "5.22.0"
+  },
+  "extra": {},
+  "finished_at": "2026-10-30T12:59:35Z",
+  "gate": "v1",
+  "model": {},
+  "run_id": "20261030T125935Z_v1_d1_niah_lfm3_b165bff0",
+  "schema_version": 1,
+  "source_tree": {
+    "files": 32,
+    "src_sprm_sha256": "d32e33f86b1e1067ad4ccc4d774926a0d95f1d33b2f3083adf3b900968b46ca1"
+  },
+  "started_at": "2026-10-30T12:59:35Z",
+  "status": "PASS",
+  "verdict": "PASS"
+}

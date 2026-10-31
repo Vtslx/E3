@@ -6,7 +6,7 @@ gate lives in [`docs/VERIFICATION_PROTOCOL.md`](docs/VERIFICATION_PROTOCOL.md).
 
 | Form | Description | Status |
 |------|-------------|--------|
-| **A** | Per-layer global associative memory, delta-rule writes, exact Tier-1 sink+window | implemented; V0/V1/V2 PASS; full D1 FAIL (McNemar p=0.125); D5 FAIL |
+| **A** | Per-layer global associative memory, delta-rule writes, exact Tier-1 sink+window | implemented; V0/V1/V2 PASS; D5 2048 PASS; D5 512 FAIL; S1 PASS; D1 512/1024/2048 done; W1 cut |
 | **N** | Compressed prefix of soft tokens, frozen main model | contract + budget planner only; not verified |
 
 The verification model is the local `LFM3-1.7B` checkpoint at
@@ -15,38 +15,67 @@ The verification model is the local `LFM3-1.7B` checkpoint at
 sliding layers stay native. The runs in `verification/` were produced on an Apple M4 with MPS
 and 16 GB unified memory.
 
-## Current archive (2026-10-30)
+## Current archive (2026-10-30, A route)
 
-| gate | run | status | what it establishes |
-|------|-----|--------|---------------------|
-| V0 | `20261030T064802Z_v0_d1_niah_lfm3_e72d25ba` | PASS | backend contract, RoPE round-trip, cache invariants |
-| V1 | `20261030T064813Z_v1_d1_niah_lfm3_e72d25ba` | PASS | allocator, memory writes, trust region, archive integrity |
-| V2 | `20261030T064814Z_v2_d1_niah_lfm3_e72d25ba` | PASS | cache surgery exact, online prefill structure |
-| D1 | `20261030T064851Z_d1_d1_niah_lfm3_e72d25ba` | **FAIL** | full 216-sample grid (8 samples/cell), `reduced=false` |
-| D5 | `20261030T113511Z_d5_d1_niah_lfm3_e72d25ba` | **FAIL** | 192-token W1 decode; condition `inf`, shrinkage 0.956 |
+| gate | run | status | note |
+|------|-----|--------|------|
+| V0 | `20261030T125922Z_v0_d1_niah_lfm3_b165bff0` | PASS | backend contract |
+| V1 | `20261030T125935Z_v1_d1_niah_lfm3_b165bff0` | PASS | contracts/properties |
+| V2 | `20261030T125936Z_v2_d1_niah_lfm3_b165bff0` | PASS | cache surgery/online structure |
+| D5 | `20261030T130006Z_d5_d1_niah_lfm3_slots512_b165bff0` | FAIL | 512 slots: condition/shrinkage fail |
+| D5 | `20261030T130102Z_d5_d1_niah_lfm3_slots2048_b165bff0` | PASS | condition 80, generated-W1 shrinkage pass |
+| S1 | `20261030T130205Z_s1_d1_niah_lfm3_b165bff0` | PASS | prompt-lookup 2.34x, output match |
+| D1 | `20261030T130237Z_d1_d1_niah_lfm3_slots512_b165bff0` | **FAIL** | memory far +1.39pp, p=0.50; writeback 0/0; M2 stop at 512 |
+| D1 | `20261030T175745Z_d1_d1_niah_lfm3_slots2048_b165bff0` | **FAIL** | memory PASS (+43.06pp far, p=3.9e-7); writeback FAIL (0.0, p=0.75) |
+| D1 | `20261031T052302Z_d1_d1_niah_lfm3_slots1024_b165bff0` | **FAIL** | memory PASS (+13.89pp far, p=0.021); writeback FAIL (0.0) |
 
-The full D1 ran with source `ab1c0bc2ce9b` on 216 samples (8 per cell, all three kinds,
-lengths and depths) and sealed with `reduced=false`. It supersedes the earlier reduced run.
+The D1 gate now reports **memory effect (`C3 - C1`)** and **writeback effect
+(`C4 - C3`)** separately; `C4 - C1` is a combined diagnostic and never gates. The previous
+uniform-allocation D1 is superseded: uniform gave +4.17 pp far but McNemar p=0.125 and no
+writeback effect. The new runs use future-query attention allocation and the stability
+mechanisms.
 
-- `C0` exact KV: **97.2%** overall, 94.4% at 32k (the task ceiling is high but not perfect);
-- `C1` streaming: 42.6% overall, **26.4% at 32k**;
-- `C3`/`C4` memory: 44.9% overall, **30.6% at 32k**;
-- far-bucket pooled gain: **+4.17 pp**; by kind: single +4.17, multi +8.33, conditional 0.0
-  (**2/3 kinds** improved);
-- near-bucket degradation: **0.0**;
-- paired far: 3 improved, 0 degraded, 19 both, 50 neither; **McNemar p=0.125**.
+**512-sealed result:** the memory effect is large outside the far bucket (overall 59.3% vs
+42.6%; 8k 79.2% vs 47.2%; 16k 70.8% vs 54.2%) but only +1.39pp at 32k (27.8% vs 26.4%,
+paired 4 improved / 3 degraded, p=0.50). Writeback is exactly 0/0. The decision tool returns
+**STOP A / switch to SparSpec at 512** under the M2 rule: 32k is within a few points of chance.
+**2048-sealed result (the capacity test):** memory effect **PASS** — far C1 26.4% ->
+C3 69.4% (**+43.06pp**), 3/3 kinds, near degradation -40.3pp (C3 better), 36 improved /
+5 degraded, McNemar p=3.9e-7. By kind: single 29.2% -> 100%, multi 37.5% -> 66.7%,
+conditional 12.5% -> 41.7%. C0 97.2% overall. Writeback effect **FAIL**: 0.0 pp, 0/3 kinds,
+1 improved / 1 degraded, p=0.75; C3 and C4 have the same 32k far result (50/72).
 
-The gate fails only on the McNemar threshold (`alpha=0.10`): the +4.17 pp gain is real but
-rests on three discordant pairs. W1 adds nothing measurable: C3 and C4 have identical
-accuracy and 0 improved/0 degraded pairs; mean gold candidate probability is 0.4267 (C3)
-versus 0.4264 (C4). The exact ceiling and the above-chance far numbers confirm the task and
-scoring; the 512-slot memory effect is small and not statistically significant at this
-sample size.
+**Decision (M2):**
+- **512 slots: STOP A or switch to SparSpec at this budget.** 32k is only 2.8pp above chance
+  and the memory effect is not significant. Do not add samples at 512.
+- **2048 slots: KEEP A MEMORY (W2 + future-query allocation); DROP OR REDESIGN W1.** The
+  memory effect is large and significant; the writeback is null. The next iteration should
+  test a stronger/different W1 (gain, per-step refresh, or batch write) or remove C4 and keep
+  C3. N remains deferred until the A writeback decision.
 
-D5 (one 8k sample, 192-token W1 decode) also fails: the key-matrix condition is `inf`
-(rank-deficient keys) and the window reconstruction shrinkage is 0.956, i.e. the error grew
-about 4.6% over the decode. Anchors, replay, and eta adaptation are not implemented and are
-not tested.
+## Compression vs far-accuracy frontier
+
+W1 decision: **cut the current W1** from the A-route frontier (ADR-008). It is 0/3 kinds and
+p=0.75 at 2048 even with the slot refresh and W1-aware scorer; C3=C4 at 32k. The current W1
+also pays for fp32 memory, anchor refs, and a replay buffer, which is why the resident
+compression is only 2.28x at the 2048 working point.
+
+Measured at 32k (`tools/frontier.py`, `docs/frontier.svg`):
+
+| slots | far C1 | far C3 | resident | no W1 buffers | bf16 core | logical | global attn |
+|-------|--------|--------|----------|---------------|-----------|---------|-------------|
+| 512 | 26.4% | 27.8% | 4.84x | 8.33x | 9.56x | 11.19x | 12.19x |
+| 1024 | 26.4% | 40.3% | 3.52x | 6.00x | 7.38x | 9.53x | 10.24x |
+| 2048 | 26.4% | 69.4% | **2.28x** | 3.85x | 5.06x | 7.36x | 7.76x |
+
+The measured frontier is the resident line: 512 buys 4.84x but stays at chance (27.8%);
+1024 gives 3.52x and 40.3%; 2048 gives 69.4% far accuracy at **2.28x resident**. The 8x
+target appears only in the no-W1/bf16/logical projections; the gap is the fp32 memory
+duplicate, the anchor refs, and the replay buffer. Cutting W1 removes the last two; a bf16
+memory and a direct associative read (no duplicated slot cache) are the remaining
+engineering steps. Do not claim 8x at the measured 2048 point. The 8x-at-512 point is 27.8%
+far: near chance. The frontier is monotone in the wrong direction for the design's
+8x-at-mached-quality claim.
 
 ## What is verified
 
@@ -59,7 +88,13 @@ not tested.
   codes are ranked by teacher-forced log-probability. Chance is 25%. This avoids the
   first-option and letter-tokenization biases that made multiple-choice letters unusable;
   see ADR-004.
-- D1-style experiment on synthetic passkey retrieval at 8k / 16k / 32k.
+- **Future-query attention allocation** for W2: the question queries from the exact `C0`
+  prefill score each evicted block; the slot budget replaces uniform (ADR-005).
+- **Stability**: anchors, bounded replay, eta adaptation, and D5 at 512/2048 slots
+  (ADR-006).
+- **D1 attribution**: memory (`C3 - C1`) and writeback (`C4 - C3`) are separate checks.
+- **S1 speed**: prompt-lookup speculative decoding with all-or-nothing commit, output
+  token-identical to greedy, tokens/s measured (ADR-007).
 - Stability diagnostics: reconstruction error, condition number, trust region, memory bytes,
   KV bytes per token, and the gold candidate's probability and rank.
 - D5 long-decode stability gate: condition bound and window-reconstruction shrinkage.

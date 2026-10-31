@@ -33,6 +33,14 @@ tier2:
   condition_every_blocks: 8
   min_slots_per_block: 1
   max_slot_multiplier: 4.0
+  anchor_interval: 64
+  anchor_blend: 0.01
+  replay_blocks: 2
+  replay_interval: 32
+  eta_adapt_interval: 16
+  eta_min: 0.005
+  eta_max: 0.2
+  eta_adapt_rate: 0.05
 
 runtime:
   max_new_tokens: 16
@@ -75,15 +83,15 @@ arms:
     compressed: true
     allocation: none
   C3_memory:
-    description: sink + memory slots + exact window, W2 only (online uniform allocation)
+    description: sink + memory slots + exact window, W2 only (future-query attention allocation)
     memory: true
     writeback: false
-    allocation: uniform
+    allocation: attention
   C4_memory_w1:
-    description: C3 plus per-token W1 delta-rule writeback (online uniform allocation)
+    description: C3 plus per-token W1 delta-rule writeback (future-query attention allocation)
     memory: true
     writeback: true
-    allocation: uniform
+    allocation: attention
 
 gates:
   v2_max_logit_diff: 0.05

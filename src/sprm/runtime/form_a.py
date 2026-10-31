@@ -17,6 +17,7 @@ above the first dropped global layer already saw the dropped tokens.
 
 from __future__ import annotations
 
+import math
 import time
 from collections.abc import Sequence
 from dataclasses import dataclass, field
@@ -154,6 +155,9 @@ def build_memory(
     allocation_mode = allocation or cfg.allocation
     if allocation_mode == "none":
         allocation_mode = "uniform"
+    if allocation_mode == "attention":
+        # The post-hoc builder has no proposer/query probe; use the block rank proxy.
+        allocation_mode = "effective_rank"
     per_block = allocate_slots(
         num_blocks=len(ranges),
         num_slots=cfg.num_slots,
@@ -186,6 +190,10 @@ def build_memory(
                 key_l2_normalize=cfg.key_l2_normalize,
                 kmeans_iters=cfg.kmeans_iters,
                 refine_passes=cfg.refine_passes,
+                anchor_interval=cfg.anchor_interval,
+                anchor_blend=cfg.anchor_blend,
+                replay_blocks=cfg.replay_blocks,
+                replay_interval=cfg.replay_interval,
             ),
             device=info.device,
             seed=experiment.seed + layer_idx,
@@ -246,6 +254,7 @@ def _online_slot_plan(
     *,
     min_slots_per_block: int,
     max_slot_multiplier: float,
+    importances: Sequence[float] | None = None,
 ) -> tuple[int, ...]:
     """Slots per block, never exceeding the block's token count.
 
@@ -257,14 +266,28 @@ def _online_slot_plan(
         raise ConfigError("every evicted block must contain at least one token")
     if sum(counts) < budget:
         raise ConfigError(f"cannot give {budget} slots to {sum(counts)} evicted tokens")
-    base = allocate_slots(
-        num_blocks=len(counts),
-        num_slots=budget,
-        mode="uniform",
-        importances=None,
-        min_slots_per_block=min_slots_per_block,
-        max_slot_multiplier=max_slot_multiplier,
-    )
+    if importances is not None:
+        if len(importances) != len(counts):
+            raise ConfigError(
+                f"attention allocation needs one importance per block, got {len(importances)} for {len(counts)}"
+            )
+        base = allocate_slots(
+            num_blocks=len(counts),
+            num_slots=budget,
+            mode="effective_rank",
+            importances=importances,
+            min_slots_per_block=min_slots_per_block,
+            max_slot_multiplier=max_slot_multiplier,
+        )
+    else:
+        base = allocate_slots(
+            num_blocks=len(counts),
+            num_slots=budget,
+            mode="uniform",
+            importances=None,
+            min_slots_per_block=min_slots_per_block,
+            max_slot_multiplier=max_slot_multiplier,
+        )
     allocation = [min(base[index], counts[index]) for index in range(len(counts))]
     allocated = sum(allocation)
     if allocated < budget:
@@ -290,6 +313,7 @@ def prefill_online(
     *,
     use_memory: bool,
     allocation: str = "uniform",
+    importances: Sequence[float] | None = None,
 ) -> OnlinePrefill:
     """Prefill a prompt while applying Tier-1 eviction and Tier-2 writes online.
 
@@ -320,11 +344,12 @@ def prefill_online(
         )
     if window % block != 0:
         raise ConfigError(f"window {window} must be a multiple of block {block}")
-    if use_memory and allocation != "uniform":
+    if use_memory and allocation not in {"uniform", "attention"}:
         raise ConfigError(
-            "online prefill requires allocation='uniform'; importance-based allocation needs a "
-            "first pass and is only available through the post-hoc `form-a build` diagnostic"
+            f"online prefill supports allocation='uniform' or 'attention', got {allocation!r}"
         )
+    if use_memory and allocation == "attention" and importances is None:
+        raise ConfigError("attention allocation requires block importances")
 
     t0 = time.perf_counter()
     cache = backend.new_cache()
@@ -355,6 +380,10 @@ def prefill_online(
         ranges.append((p - window, min(p - window + step, n - window)))
         p += step
     counts = [end - start for start, end in ranges]
+    if use_memory and allocation == "attention" and len(importances or []) != len(ranges):
+        raise ConfigError(
+            f"attention allocation got {len(importances or [])} importances for {len(ranges)} blocks"
+        )
     # A short prompt can evict fewer tokens than the configured budget; spending more slots
     # than tokens would make every slot a single token and is not the intended regime.
     slot_budget = min(cfg.num_slots, sum(counts)) if use_memory else 0
@@ -364,6 +393,7 @@ def prefill_online(
             slot_budget,
             min_slots_per_block=cfg.min_slots_per_block,
             max_slot_multiplier=cfg.max_slot_multiplier,
+            importances=importances if allocation == "attention" else None,
         )
         if use_memory
         else tuple()
@@ -394,6 +424,10 @@ def prefill_online(
                     key_l2_normalize=cfg.key_l2_normalize,
                     kmeans_iters=cfg.kmeans_iters,
                     refine_passes=cfg.refine_passes,
+                    anchor_interval=cfg.anchor_interval,
+                    anchor_blend=cfg.anchor_blend,
+                    replay_blocks=cfg.replay_blocks,
+                    replay_interval=cfg.replay_interval,
                 ),
                 device=info.device,
                 seed=experiment.seed + layer_idx,
@@ -411,7 +445,7 @@ def prefill_online(
 
     position = initial
     block_index = 0
-    importances: list[float] = [0.0] * len(ranges)
+    block_ranks: list[float] = [0.0] * len(ranges)
     while position < n:
         step = min(chunk, n - position)
         if position >= sink + window:
@@ -442,9 +476,9 @@ def prefill_online(
                         positions=positions,
                         block_id=block_index,
                     )
-            importances[block_index] = float(sum(rank_values) / len(rank_values))
+            block_ranks[block_index] = float(sum(rank_values) / len(rank_values))
             if build is not None:
-                build.importances = tuple(importances)
+                build.importances = tuple(block_ranks)
                 initialized += slots[block_index]
                 if (block_index + 1) % cfg.condition_every_blocks == 0:
                     for layer_idx, memory in build.memories.items():
@@ -634,8 +668,11 @@ class DecodeOutcome:
     steps: list[DecodeStep]
     first_logits: torch.Tensor
     recon_error_trajectory: list[float]
+    recon_error_generated: list[float]
     condition_final: float
     trust_scaled_count: int
+    eta_final: float
+    eta_trajectory: tuple[float, ...]
     elapsed_s: float
     peak_memory_bytes: int
 
@@ -657,9 +694,14 @@ def decode_arm(
     t0 = time.perf_counter()
     steps: list[DecodeStep] = []
     recon_trajectory: list[float] = []
+    recon_generated: list[float] = []
+    generated_window = empty_exact_window(info, max_new_tokens)
     logits = first_logits
     generated: list[int] = []
-    gain = experiment.tier2.write_gain * experiment.tier2.gate
+    base_eta = experiment.tier2.write_gain
+    eta = base_eta
+    eta_trajectory: list[float] = [eta]
+    gain = eta * experiment.tier2.gate
     peak = _mps_peak_bytes()
 
     for step in range(max_new_tokens):
@@ -689,6 +731,7 @@ def decode_arm(
             step_keys = {i: cache.layers[i].keys[..., -1:, :] for i in info.global_layers}
             step_values = {i: cache.layers[i].values[..., -1:, :] for i in info.global_layers}
             exact_window.append_step(step_keys, step_values, position)
+            generated_window.append_step(step_keys, step_values, position)
             if arm.writeback:
                 write_token_to_memory(
                     backend,
@@ -699,11 +742,30 @@ def decode_arm(
                     sink=experiment.tier1.sink_tokens,
                 )
             recon_trajectory.append(_recon_error(backend, build, exact_window))
+            recon_generated.append(_recon_error(backend, build, generated_window))
+            if (
+                len(recon_trajectory) >= 2
+                and (step + 1) % experiment.tier2.eta_adapt_interval == 0
+            ):
+                previous, current = recon_trajectory[-2], recon_trajectory[-1]
+                if previous > 0.0:
+                    relative = (previous - current) / previous
+                    eta = min(
+                        max(
+                            eta * math.exp(experiment.tier2.eta_adapt_rate * relative),
+                            experiment.tier2.eta_min,
+                        ),
+                        experiment.tier2.eta_max,
+                    )
+                    gain = eta * experiment.tier2.gate
+                eta_trajectory.append(eta)
         logits = new_logits
         peak = max(peak, _mps_peak_bytes())
 
     if build is not None and not recon_trajectory:
         recon_trajectory.append(_recon_error(backend, build, exact_window))
+    if build is not None and not recon_generated and len(exact_window.positions) > 0:
+        recon_generated.append(_recon_error(backend, build, generated_window))
     condition = float("nan")
     trust_scaled = 0
     if build is not None:
@@ -713,10 +775,35 @@ def decode_arm(
         steps=steps,
         first_logits=first_logits,
         recon_error_trajectory=recon_trajectory,
+        recon_error_generated=recon_generated,
         condition_final=condition,
         trust_scaled_count=trust_scaled,
+        eta_final=eta,
+        eta_trajectory=tuple(eta_trajectory),
         elapsed_s=time.perf_counter() - t0,
         peak_memory_bytes=peak,
+    )
+
+
+def empty_exact_window(info: Any, capacity: int) -> ExactWindow:
+    """An empty rolling window for the generated tokens only."""
+    keys = {
+        index: torch.empty(
+            1, info.num_kv_heads, 0, info.head_dim, device=info.device, dtype=info.dtype_torch
+        )
+        for index in info.global_layers
+    }
+    values = {
+        index: torch.empty(
+            1, info.num_kv_heads, 0, info.head_dim, device=info.device, dtype=info.dtype_torch
+        )
+        for index in info.global_layers
+    }
+    return ExactWindow(
+        keys=keys,
+        values=values,
+        positions=torch.empty(0, device=info.device, dtype=torch.long),
+        capacity=capacity,
     )
 
 
