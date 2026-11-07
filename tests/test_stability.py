@@ -20,6 +20,7 @@ def _memory() -> AssociativeMemory:
             key_l2_normalize=True,
             kmeans_iters=4,
             refine_passes=1,
+            stability_buffers=True,
             anchor_interval=2,
             anchor_blend=0.1,
             replay_blocks=1,

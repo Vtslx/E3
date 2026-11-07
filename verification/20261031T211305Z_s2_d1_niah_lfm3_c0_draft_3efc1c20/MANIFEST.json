@@ -1,0 +1,171 @@
+{
+  "argv": [
+    ".venv/bin/sprm",
+    "verify",
+    "s2",
+    "--config",
+    "configs/experiments/d1_niah.yaml",
+    "--arm",
+    "C0_full",
+    "--draft-head",
+    "/tmp/sprm_draft/heads_wt2_r128.pt",
+    "--max-new-tokens",
+    "32"
+  ],
+  "artifacts": {
+    "CLAIMS.md": {
+      "sha256": "c1d725267f653a95b3332bab3b2a3ab6a1eab6e1396963dc0bc19c4f1a6ca25e",
+      "size": 681
+    },
+    "REPORT.md": {
+      "sha256": "6278f468626f76142dd898a31895ee7844be33ec006b2aec383f52b7d0fec874",
+      "size": 883
+    },
+    "RESULT.json": {
+      "sha256": "99901e06831b5a80fb691dd77b3a0b97f67615e25f0b445055788ccc9f24b4a0",
+      "size": 1296
+    },
+    "artifacts/checks.json": {
+      "sha256": "bbb0af313016bf87c6051549df127a7dae5bee5e5a95eb150e1924da586dc386",
+      "size": 446
+    },
+    "artifacts/summary.json": {
+      "sha256": "83f245d32374c859182877f4972a86a6f64acb32f8674abf06a83a96421b3ce0",
+      "size": 1447
+    },
+    "config.yaml": {
+      "sha256": "3efc1c208a870d16c220ba76e72227e26278d25ff11b0cdf10adde5cf110a11c",
+      "size": 2444
+    },
+    "logs/events.jsonl": {
+      "sha256": "87bceef81c1c2499132eb16279a16517a7f4db6bf867c6825385e1e44112e479",
+      "size": 882
+    },
+    "logs/stdout.log": {
+      "sha256": "87bceef81c1c2499132eb16279a16517a7f4db6bf867c6825385e1e44112e479",
+      "size": 882
+    }
+  },
+  "config": {
+    "sha256": "3efc1c208a870d16c220ba76e72227e26278d25ff11b0cdf10adde5cf110a11c",
+    "snapshot": "config.yaml"
+  },
+  "duration_s": 20.18,
+  "environment": {
+    "cpu_count": 10,
+    "cuda_available": false,
+    "machine": "arm64",
+    "mps_available": true,
+    "mps_built": true,
+    "mps_recommended_max_memory_bytes": 12713115648,
+    "platform": "macOS-27.2-arm64-arm-64bit-Mach-O",
+    "processor": "arm",
+    "python": "3.14.6",
+    "python_executable": "/Volumes/Net/E3/.venv/bin/python",
+    "ram_total_bytes": 17179869184,
+    "timestamp_utc": "2026-10-31T21:13:25Z",
+    "torch": "2.15.0",
+    "transformers": "5.22.0"
+  },
+  "extra": {
+    "arm": "C0_full",
+    "draft_head": "/tmp/sprm_draft/heads_wt2_r128.pt",
+    "gamma": 4,
+    "max_new_tokens": 32,
+    "ngram": 3,
+    "partial": false,
+    "prompt_tokens": 4096,
+    "proposer": "False"
+  },
+  "finished_at": "2026-10-31T21:13:25Z",
+  "gate": "s2",
+  "model": {
+    "conv_layers": [
+      0,
+      1,
+      3,
+      5,
+      7,
+      9,
+      11,
+      13,
+      15,
+      17,
+      19,
+      21,
+      23
+    ],
+    "device": "mps",
+    "dtype": "bfloat16",
+    "file_hashes": {
+      "configuration_lfm3.py": "176cced35657aedfea7d7002221360582d1c05fcaca882c21508bc3a73b282e5",
+      "lfm3_conv.py": "80d4a985382a22774212759248a6b4c737bfbf9c2a47b3dd7f797dda748e4bb4",
+      "model.safetensors": "135922caef64e81e52af88ede8b7c3ddaa9d6da220a9737fb3065275dbfb4330",
+      "modeling_lfm3.py": "e8cd5254ea99ce6bd731b57b10908c2e8b5010ce8315341f895a38484885eeab",
+      "tokenizer.json": "7e226e34bface23ccf6e495d157bf77186c1c30a7659880e1a8994db528c3701"
+    },
+    "global_layers": [
+      2,
+      6,
+      10,
+      14,
+      18,
+      22
+    ],
+    "head_dim": 128,
+    "hidden_size": 2048,
+    "kind": "lfm3",
+    "layer_kinds": [
+      "conv",
+      "conv",
+      "full_attention",
+      "conv",
+      "sliding_attention",
+      "conv",
+      "full_attention",
+      "conv",
+      "sliding_attention",
+      "conv",
+      "full_attention",
+      "conv",
+      "sliding_attention",
+      "conv",
+      "full_attention",
+      "conv",
+      "sliding_attention",
+      "conv",
+      "full_attention",
+      "conv",
+      "sliding_attention",
+      "conv",
+      "full_attention",
+      "conv"
+    ],
+    "max_position_embeddings": 262144,
+    "model_path": "/Users/yikewang/Model/LFM3/LFM3-1.7B",
+    "model_sha256": null,
+    "num_attention_heads": 16,
+    "num_kv_heads": 4,
+    "num_layers": 24,
+    "remote_code_sha256": null,
+    "sliding_layers": [
+      4,
+      8,
+      12,
+      16,
+      20
+    ],
+    "sliding_window": 256,
+    "tokenizer_sha256": null,
+    "vocab_size": 128000
+  },
+  "run_id": "20261031T211305Z_s2_d1_niah_lfm3_c0_draft_3efc1c20",
+  "schema_version": 1,
+  "source_tree": {
+    "files": 33,
+    "src_sprm_sha256": "a0b57779a53c007dacde0a66f965134bba0494693bf23cdc0e6bc04faf29ce26"
+  },
+  "started_at": "2026-10-31T21:13:05Z",
+  "status": "FAIL",
+  "verdict": "FAIL: C0_full speedup 0.3691x, acceptance 0.0000, match=True"
+}

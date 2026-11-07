@@ -34,6 +34,7 @@ from sprm.runtime.form_a import (
     cache_footprint_bytes,
     decode_arm,
     exact_window_from_cache,
+    inject_query_read,
     prefill_online,
     refresh_memory_slots,
     write_last_token_to_memory,
@@ -365,6 +366,7 @@ def run_sample(
     prefill_total = 0.0
     build_total = 0.0
     attention_importances: list[float] | None = None
+    question_queries: dict[int, tuple[torch.Tensor, torch.Tensor]] = {}
 
     if exact_arms:
         probe = QueryProbe(
@@ -387,8 +389,9 @@ def run_sample(
         evict_end = len(prompt) - window
         if evict_end > sink:
             ranges = [(start, min(start + block, evict_end)) for start in range(sink, evict_end, block)]
+            question_queries = probe.queries()
             attention_importances = backend.block_attention_importances(
-                cache, ranges, probe.queries()
+                cache, ranges, question_queries
             )
         for arm_id in exact_arms:
             arm_cache = cache.clone()
@@ -447,6 +450,8 @@ def run_sample(
             allocation=allocation,
             importances=online_importances,
         )
+        if experiment.tier2.query_read and online.build is not None and question_queries:
+            inject_query_read(backend, online.cache, online.build, question_queries, experiment)
         build_s = float(online.build.build_seconds) if online.build is not None else 0.0
         prefill_s = max(0.0, online.prefill_seconds - build_s)
         prefill_total += prefill_s

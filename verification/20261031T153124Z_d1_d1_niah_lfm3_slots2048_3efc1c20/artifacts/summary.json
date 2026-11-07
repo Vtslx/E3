@@ -1,0 +1,336 @@
+{
+  "by_arm": {
+    "C0_full": {
+      "accuracy": 0.9722222222222222,
+      "arm_id": "C0_full",
+      "by_context_length": {
+        "16384": {
+          "accuracy": 0.9861111111111112,
+          "correct": 71,
+          "total": 72
+        },
+        "32768": {
+          "accuracy": 0.9444444444444444,
+          "correct": 68,
+          "total": 72
+        },
+        "8192": {
+          "accuracy": 0.9861111111111112,
+          "correct": 71,
+          "total": 72
+        }
+      },
+      "by_task_kind": {
+        "conditional": {
+          "accuracy": 0.9305555555555556,
+          "correct": 67,
+          "total": 72
+        },
+        "multi_needle": {
+          "accuracy": 0.9861111111111112,
+          "correct": 71,
+          "total": 72
+        },
+        "single_needle": {
+          "accuracy": 1.0,
+          "correct": 72,
+          "total": 72
+        }
+      },
+      "correct": 210,
+      "mean_gold_logprob": -0.08426354650071988,
+      "mean_gold_probability": 0.9722893187551945,
+      "mean_gold_rank": 1.0277777777777777,
+      "total": 216
+    },
+    "C1_stream": {
+      "accuracy": 0.42592592592592593,
+      "arm_id": "C1_stream",
+      "by_context_length": {
+        "16384": {
+          "accuracy": 0.5416666666666666,
+          "correct": 39,
+          "total": 72
+        },
+        "32768": {
+          "accuracy": 0.2638888888888889,
+          "correct": 19,
+          "total": 72
+        },
+        "8192": {
+          "accuracy": 0.4722222222222222,
+          "correct": 34,
+          "total": 72
+        }
+      },
+      "by_task_kind": {
+        "conditional": {
+          "accuracy": 0.375,
+          "correct": 27,
+          "total": 72
+        },
+        "multi_needle": {
+          "accuracy": 0.4583333333333333,
+          "correct": 33,
+          "total": 72
+        },
+        "single_needle": {
+          "accuracy": 0.4444444444444444,
+          "correct": 32,
+          "total": 72
+        }
+      },
+      "correct": 92,
+      "mean_gold_logprob": -11.650705723804869,
+      "mean_gold_probability": 0.41067335555403556,
+      "mean_gold_rank": 2.189814814814815,
+      "total": 216
+    },
+    "C3_memory": {
+      "accuracy": 0.8101851851851852,
+      "arm_id": "C3_memory",
+      "by_context_length": {
+        "16384": {
+          "accuracy": 0.8472222222222222,
+          "correct": 61,
+          "total": 72
+        },
+        "32768": {
+          "accuracy": 0.7083333333333334,
+          "correct": 51,
+          "total": 72
+        },
+        "8192": {
+          "accuracy": 0.875,
+          "correct": 63,
+          "total": 72
+        }
+      },
+      "by_task_kind": {
+        "conditional": {
+          "accuracy": 0.7083333333333334,
+          "correct": 51,
+          "total": 72
+        },
+        "multi_needle": {
+          "accuracy": 0.7361111111111112,
+          "correct": 53,
+          "total": 72
+        },
+        "single_needle": {
+          "accuracy": 0.9861111111111112,
+          "correct": 71,
+          "total": 72
+        }
+      },
+      "correct": 175,
+      "mean_gold_logprob": -7.638199006919523,
+      "mean_gold_probability": 0.7569041935820267,
+      "mean_gold_rank": 1.2175925925925926,
+      "total": 216
+    },
+    "C4_memory_w1": {
+      "accuracy": 0.8101851851851852,
+      "arm_id": "C4_memory_w1",
+      "by_context_length": {
+        "16384": {
+          "accuracy": 0.8472222222222222,
+          "correct": 61,
+          "total": 72
+        },
+        "32768": {
+          "accuracy": 0.7083333333333334,
+          "correct": 51,
+          "total": 72
+        },
+        "8192": {
+          "accuracy": 0.875,
+          "correct": 63,
+          "total": 72
+        }
+      },
+      "by_task_kind": {
+        "conditional": {
+          "accuracy": 0.7083333333333334,
+          "correct": 51,
+          "total": 72
+        },
+        "multi_needle": {
+          "accuracy": 0.7361111111111112,
+          "correct": 53,
+          "total": 72
+        },
+        "single_needle": {
+          "accuracy": 0.9861111111111112,
+          "correct": 71,
+          "total": 72
+        }
+      },
+      "correct": 175,
+      "mean_gold_logprob": -7.637648598509528,
+      "mean_gold_probability": 0.7572548157741712,
+      "mean_gold_rank": 1.2222222222222223,
+      "total": 216
+    }
+  },
+  "combined_effect": {
+    "candidate": "C4_memory_w1",
+    "checks": [
+      "Check(name='combined_far_bucket', passed=True, detail=72)",
+      "Check(name='combined_kinds_improved', passed=True, detail='3/3')",
+      "Check(name='combined_near_degradation', passed=True, detail=-0.4027777777777778)",
+      "Check(name='combined_mcnemar', passed=True, detail=2.2168524083099328e-07)"
+    ],
+    "control": "C1_stream",
+    "kinds_improved": 3,
+    "near_candidate": 0.875,
+    "near_control": 0.4722222222222222,
+    "near_degradation": -0.4027777777777778,
+    "paired_far": {
+      "both_correct": 14,
+      "degraded": 5,
+      "improved": 37,
+      "mcnemar_p": 2.2168524083099328e-07,
+      "neither_correct": 16,
+      "pairs": 72
+    },
+    "paired_near": {
+      "both_correct": 32,
+      "degraded": 2,
+      "improved": 31,
+      "mcnemar_p": 6.542541086673737e-08,
+      "neither_correct": 7,
+      "pairs": 72
+    },
+    "per_kind": {
+      "conditional": {
+        "candidate_accuracy": 0.4583333333333333,
+        "control_accuracy": 0.125,
+        "control_total": 24,
+        "gain": 0.3333333333333333
+      },
+      "multi_needle": {
+        "candidate_accuracy": 0.6666666666666666,
+        "control_accuracy": 0.375,
+        "control_total": 24,
+        "gain": 0.29166666666666663
+      },
+      "single_needle": {
+        "candidate_accuracy": 1.0,
+        "control_accuracy": 0.2916666666666667,
+        "control_total": 24,
+        "gain": 0.7083333333333333
+      }
+    },
+    "pooled_candidate": 0.7083333333333334,
+    "pooled_control": 0.2638888888888889,
+    "pooled_gain": 0.4444444444444445
+  },
+  "errors": [],
+  "memory_effect": {
+    "candidate": "C3_memory",
+    "checks": [
+      "Check(name='memory_far_bucket', passed=True, detail=72)",
+      "Check(name='memory_kinds_improved', passed=True, detail='3/3')",
+      "Check(name='memory_near_degradation', passed=True, detail=-0.4027777777777778)",
+      "Check(name='memory_mcnemar', passed=True, detail=2.2168524083099328e-07)"
+    ],
+    "control": "C1_stream",
+    "kinds_improved": 3,
+    "near_candidate": 0.875,
+    "near_control": 0.4722222222222222,
+    "near_degradation": -0.4027777777777778,
+    "paired_far": {
+      "both_correct": 14,
+      "degraded": 5,
+      "improved": 37,
+      "mcnemar_p": 2.2168524083099328e-07,
+      "neither_correct": 16,
+      "pairs": 72
+    },
+    "paired_near": {
+      "both_correct": 32,
+      "degraded": 2,
+      "improved": 31,
+      "mcnemar_p": 6.542541086673737e-08,
+      "neither_correct": 7,
+      "pairs": 72
+    },
+    "per_kind": {
+      "conditional": {
+        "candidate_accuracy": 0.4583333333333333,
+        "control_accuracy": 0.125,
+        "control_total": 24,
+        "gain": 0.3333333333333333
+      },
+      "multi_needle": {
+        "candidate_accuracy": 0.6666666666666666,
+        "control_accuracy": 0.375,
+        "control_total": 24,
+        "gain": 0.29166666666666663
+      },
+      "single_needle": {
+        "candidate_accuracy": 1.0,
+        "control_accuracy": 0.2916666666666667,
+        "control_total": 24,
+        "gain": 0.7083333333333333
+      }
+    },
+    "pooled_candidate": 0.7083333333333334,
+    "pooled_control": 0.2638888888888889,
+    "pooled_gain": 0.4444444444444445
+  },
+  "writeback_effect": {
+    "candidate": "C4_memory_w1",
+    "checks": [
+      "Check(name='writeback_far_bucket', passed=True, detail=72)",
+      "Check(name='writeback_kinds_improved', passed=False, detail='0/3')",
+      "Check(name='writeback_near_degradation', passed=True, detail=0.0)",
+      "Check(name='writeback_mcnemar', passed=False, detail=1.0)"
+    ],
+    "control": "C3_memory",
+    "kinds_improved": 0,
+    "near_candidate": 0.875,
+    "near_control": 0.875,
+    "near_degradation": 0.0,
+    "paired_far": {
+      "both_correct": 51,
+      "degraded": 0,
+      "improved": 0,
+      "mcnemar_p": 1.0,
+      "neither_correct": 21,
+      "pairs": 72
+    },
+    "paired_near": {
+      "both_correct": 63,
+      "degraded": 0,
+      "improved": 0,
+      "mcnemar_p": 1.0,
+      "neither_correct": 9,
+      "pairs": 72
+    },
+    "per_kind": {
+      "conditional": {
+        "candidate_accuracy": 0.4583333333333333,
+        "control_accuracy": 0.4583333333333333,
+        "control_total": 24,
+        "gain": 0.0
+      },
+      "multi_needle": {
+        "candidate_accuracy": 0.6666666666666666,
+        "control_accuracy": 0.6666666666666666,
+        "control_total": 24,
+        "gain": 0.0
+      },
+      "single_needle": {
+        "candidate_accuracy": 1.0,
+        "control_accuracy": 1.0,
+        "control_total": 24,
+        "gain": 0.0
+      }
+    },
+    "pooled_candidate": 0.7083333333333334,
+    "pooled_control": 0.7083333333333334,
+    "pooled_gain": 0.0
+  }
+}

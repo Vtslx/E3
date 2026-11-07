@@ -1,0 +1,220 @@
+{
+  "by_arm": {
+    "C0_full": {
+      "accuracy": 1.0,
+      "arm_id": "C0_full",
+      "by_context_length": {
+        "32768": {
+          "accuracy": 1.0,
+          "correct": 3,
+          "total": 3
+        }
+      },
+      "by_task_kind": {
+        "conditional": {
+          "accuracy": 1.0,
+          "correct": 3,
+          "total": 3
+        }
+      },
+      "correct": 3,
+      "mean_gold_logprob": -0.06313829310238361,
+      "mean_gold_probability": 0.9560639444032707,
+      "mean_gold_rank": 1.0,
+      "total": 3
+    },
+    "C1_stream": {
+      "accuracy": 0.0,
+      "arm_id": "C1_stream",
+      "by_context_length": {
+        "32768": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 3
+        }
+      },
+      "by_task_kind": {
+        "conditional": {
+          "accuracy": 0.0,
+          "correct": 0,
+          "total": 3
+        }
+      },
+      "correct": 0,
+      "mean_gold_logprob": -14.80932092666626,
+      "mean_gold_probability": 0.19811128778582102,
+      "mean_gold_rank": 2.6666666666666665,
+      "total": 3
+    },
+    "C3_memory": {
+      "accuracy": 0.6666666666666666,
+      "arm_id": "C3_memory",
+      "by_context_length": {
+        "32768": {
+          "accuracy": 0.6666666666666666,
+          "correct": 2,
+          "total": 3
+        }
+      },
+      "by_task_kind": {
+        "conditional": {
+          "accuracy": 0.6666666666666666,
+          "correct": 2,
+          "total": 3
+        }
+      },
+      "correct": 2,
+      "mean_gold_logprob": -12.373138427734375,
+      "mean_gold_probability": 0.4667443391827613,
+      "mean_gold_rank": 1.3333333333333333,
+      "total": 3
+    },
+    "C4_memory_w1": {
+      "accuracy": 0.6666666666666666,
+      "arm_id": "C4_memory_w1",
+      "by_context_length": {
+        "32768": {
+          "accuracy": 0.6666666666666666,
+          "correct": 2,
+          "total": 3
+        }
+      },
+      "by_task_kind": {
+        "conditional": {
+          "accuracy": 0.6666666666666666,
+          "correct": 2,
+          "total": 3
+        }
+      },
+      "correct": 2,
+      "mean_gold_logprob": -12.37850570678711,
+      "mean_gold_probability": 0.4732263164640758,
+      "mean_gold_rank": 1.3333333333333333,
+      "total": 3
+    }
+  },
+  "combined_effect": {
+    "candidate": "C4_memory_w1",
+    "checks": [
+      "Check(name='combined_far_bucket', passed=True, detail=3)",
+      "Check(name='combined_kinds_improved', passed=False, detail='1/1')",
+      "Check(name='combined_near_degradation', passed=False, detail=nan)",
+      "Check(name='combined_mcnemar', passed=False, detail=0.25)"
+    ],
+    "control": "C1_stream",
+    "kinds_improved": 1,
+    "near_candidate": NaN,
+    "near_control": NaN,
+    "near_degradation": NaN,
+    "paired_far": {
+      "both_correct": 0,
+      "degraded": 0,
+      "improved": 2,
+      "mcnemar_p": 0.25,
+      "neither_correct": 1,
+      "pairs": 3
+    },
+    "paired_near": {
+      "both_correct": 0,
+      "degraded": 0,
+      "improved": 0,
+      "mcnemar_p": 1.0,
+      "neither_correct": 0,
+      "pairs": 0
+    },
+    "per_kind": {
+      "conditional": {
+        "candidate_accuracy": 0.6666666666666666,
+        "control_accuracy": 0.0,
+        "control_total": 3,
+        "gain": 0.6666666666666666
+      }
+    },
+    "pooled_candidate": 0.6666666666666666,
+    "pooled_control": 0.0,
+    "pooled_gain": 0.6666666666666666
+  },
+  "errors": [],
+  "memory_effect": {
+    "candidate": "C3_memory",
+    "checks": [
+      "Check(name='memory_far_bucket', passed=True, detail=3)",
+      "Check(name='memory_kinds_improved', passed=False, detail='1/1')",
+      "Check(name='memory_near_degradation', passed=False, detail=nan)",
+      "Check(name='memory_mcnemar', passed=False, detail=0.25)"
+    ],
+    "control": "C1_stream",
+    "kinds_improved": 1,
+    "near_candidate": NaN,
+    "near_control": NaN,
+    "near_degradation": NaN,
+    "paired_far": {
+      "both_correct": 0,
+      "degraded": 0,
+      "improved": 2,
+      "mcnemar_p": 0.25,
+      "neither_correct": 1,
+      "pairs": 3
+    },
+    "paired_near": {
+      "both_correct": 0,
+      "degraded": 0,
+      "improved": 0,
+      "mcnemar_p": 1.0,
+      "neither_correct": 0,
+      "pairs": 0
+    },
+    "per_kind": {
+      "conditional": {
+        "candidate_accuracy": 0.6666666666666666,
+        "control_accuracy": 0.0,
+        "control_total": 3,
+        "gain": 0.6666666666666666
+      }
+    },
+    "pooled_candidate": 0.6666666666666666,
+    "pooled_control": 0.0,
+    "pooled_gain": 0.6666666666666666
+  },
+  "writeback_effect": {
+    "candidate": "C4_memory_w1",
+    "checks": [
+      "Check(name='writeback_far_bucket', passed=True, detail=3)",
+      "Check(name='writeback_kinds_improved', passed=False, detail='0/1')",
+      "Check(name='writeback_near_degradation', passed=False, detail=nan)",
+      "Check(name='writeback_mcnemar', passed=False, detail=1.0)"
+    ],
+    "control": "C3_memory",
+    "kinds_improved": 0,
+    "near_candidate": NaN,
+    "near_control": NaN,
+    "near_degradation": NaN,
+    "paired_far": {
+      "both_correct": 2,
+      "degraded": 0,
+      "improved": 0,
+      "mcnemar_p": 1.0,
+      "neither_correct": 1,
+      "pairs": 3
+    },
+    "paired_near": {
+      "both_correct": 0,
+      "degraded": 0,
+      "improved": 0,
+      "mcnemar_p": 1.0,
+      "neither_correct": 0,
+      "pairs": 0
+    },
+    "per_kind": {
+      "conditional": {
+        "candidate_accuracy": 0.6666666666666666,
+        "control_accuracy": 0.6666666666666666,
+        "control_total": 3,
+        "gain": 0.0
+      }
+    },
+    "pooled_candidate": 0.6666666666666666,
+    "pooled_control": 0.6666666666666666,
+    "pooled_gain": 0.0
+  }
+}

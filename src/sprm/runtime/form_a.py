@@ -190,6 +190,9 @@ def build_memory(
                 key_l2_normalize=cfg.key_l2_normalize,
                 kmeans_iters=cfg.kmeans_iters,
                 refine_passes=cfg.refine_passes,
+                key_singular_floor=cfg.key_singular_floor,
+                stability_buffers=cfg.stability_buffers,
+                memory_dtype=cfg.memory_dtype,
                 anchor_interval=cfg.anchor_interval,
                 anchor_blend=cfg.anchor_blend,
                 replay_blocks=cfg.replay_blocks,
@@ -224,6 +227,8 @@ def build_memory(
                     memory.apply_forgetting(cfg.forgetting)
                     forgetting_events += 1
 
+    for memory in memories.values():
+        memory.regularize_keys()
     elapsed = time.perf_counter() - t0
     return MemoryBuild(
         memories=memories,
@@ -424,6 +429,9 @@ def prefill_online(
                     key_l2_normalize=cfg.key_l2_normalize,
                     kmeans_iters=cfg.kmeans_iters,
                     refine_passes=cfg.refine_passes,
+                    key_singular_floor=cfg.key_singular_floor,
+                    stability_buffers=cfg.stability_buffers,
+                memory_dtype=cfg.memory_dtype,
                     anchor_interval=cfg.anchor_interval,
                     anchor_blend=cfg.anchor_blend,
                     replay_blocks=cfg.replay_blocks,
@@ -506,6 +514,9 @@ def prefill_online(
     if block_index != len(ranges):
         raise MemoryInvariantError(f"absorbed {block_index} blocks, expected {len(ranges)}")
     if build is not None:
+        for layer_idx, memory in build.memories.items():
+            condition = memory.regularize_keys()
+            build.condition_checks[layer_idx].append(condition)
         build.build_seconds = time.perf_counter() - t0
     return OnlinePrefill(
         cache=cache,
@@ -588,6 +599,58 @@ def assemble_effective_global(
             torch.cat(value_parts, dim=-2).contiguous(),
         )
     return effective
+
+
+def inject_query_read(
+    backend: Lfm3Backend,
+    cache: CacheController,
+    build: MemoryBuild,
+    queries: dict[int, tuple[torch.Tensor, torch.Tensor]],
+    experiment: ExperimentConfig,
+) -> int:
+    """Insert one question-conditioned memory read as a KV row after the slots.
+
+    The key is the last question query (rotated at its position, scaled to the native key
+    norm); the value is the associative read ``a M_v`` with ``a = softmax(tau q M_k^T)``.
+    Decode queries that resemble the question attend to the row and receive the memory's
+    answer in value space. This adds one row per global layer and touches no slot.
+    """
+    info = backend.info
+    cfg = experiment.tier2
+    index = experiment.tier1.sink_tokens + build.total_slots
+    injected = 0
+    for layer_idx in info.global_layers:
+        pair = queries.get(layer_idx)
+        if pair is None:
+            continue
+        query, positions = pair
+        memory = build.memories[layer_idx]
+        group = info.num_attention_heads // info.num_kv_heads
+        q_kv = query.reshape(
+            1, info.num_kv_heads, group, query.shape[2], query.shape[3]
+        ).mean(dim=2)
+        q_un = backend.rotary.unrotate(q_kv.float(), positions).float()[0].permute(1, 0, 2)
+        flat = q_un.reshape(-1, info.kv_width)
+        flat = flat / flat.norm(dim=-1, keepdim=True).clamp_min(1e-8)
+        weights = torch.softmax(
+            cfg.read_temperature * (flat @ memory.M_k.float().transpose(0, 1)), dim=-1
+        )
+        value = (weights @ memory.M_v.float())[-1]
+        key = q_kv[0].permute(1, 0, 2)[-1].reshape(-1)
+        key = key / key.norm().clamp_min(1e-8) * (info.kv_width**0.5)
+        layer = cache.layers[layer_idx]
+        if int(layer.keys.shape[-2]) < index:
+            continue
+        key_row = key.reshape(1, info.num_kv_heads, 1, info.head_dim).to(layer.keys.dtype)
+        value_row = value.reshape(1, info.num_kv_heads, 1, info.head_dim).to(layer.values.dtype)
+        layer.keys = torch.cat(
+            [layer.keys[..., :index, :], key_row, layer.keys[..., index:, :]], dim=-2
+        )
+        layer.values = torch.cat(
+            [layer.values[..., :index, :], value_row, layer.values[..., index:, :]], dim=-2
+        )
+        injected += 1
+    return injected
 
 
 def refresh_memory_slots(
@@ -689,6 +752,7 @@ def decode_arm(
     exact_window: ExactWindow,
     build: MemoryBuild | None,
     eostoken_id: int | None,
+    diagnostics: bool = True,
 ) -> DecodeOutcome:
     info = backend.info
     t0 = time.perf_counter()
@@ -741,6 +805,10 @@ def decode_arm(
                     gain=gain,
                     sink=experiment.tier1.sink_tokens,
                 )
+            if not diagnostics:
+                logits = new_logits
+                peak = max(peak, _mps_peak_bytes())
+                continue
             recon_trajectory.append(_recon_error(backend, build, exact_window))
             recon_generated.append(_recon_error(backend, build, generated_window))
             if (
@@ -762,13 +830,13 @@ def decode_arm(
         logits = new_logits
         peak = max(peak, _mps_peak_bytes())
 
-    if build is not None and not recon_trajectory:
+    if diagnostics and build is not None and not recon_trajectory:
         recon_trajectory.append(_recon_error(backend, build, exact_window))
-    if build is not None and not recon_generated and len(exact_window.positions) > 0:
+    if diagnostics and build is not None and not recon_generated and len(exact_window.positions) > 0:
         recon_generated.append(_recon_error(backend, build, generated_window))
     condition = float("nan")
     trust_scaled = 0
-    if build is not None:
+    if diagnostics and build is not None:
         condition = max((m.condition() for m in build.memories.values()), default=float("nan"))
         trust_scaled = int(sum(m.stats.trust_scaled_count for m in build.memories.values()))
     return DecodeOutcome(

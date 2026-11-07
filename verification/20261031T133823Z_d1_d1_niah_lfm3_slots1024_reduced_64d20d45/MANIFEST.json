@@ -1,0 +1,286 @@
+{
+  "argv": [
+    ".venv/bin/sprm",
+    "verify",
+    "d1",
+    "--config",
+    "configs/experiments/d1_niah.yaml",
+    "--slots",
+    "1024",
+    "--samples-per-cell",
+    "1",
+    "--max-new-tokens",
+    "8"
+  ],
+  "artifacts": {
+    "CLAIMS.md": {
+      "sha256": "bf46c3ef9e7f990cc2c81b605a4b80e8b4cb7fd2e747b33f13844763a5d89089",
+      "size": 602
+    },
+    "REPORT.md": {
+      "sha256": "e3d7476dbdf2832b3fa5b06599fc83c4514996e904d8ac9f981886d7190825c5",
+      "size": 3072
+    },
+    "RESULT.json": {
+      "sha256": "01fb59dd1ab49086e2b6c7eef77ca3c78acc8ecf3619cdcbc498227d5f478f3b",
+      "size": 9848
+    },
+    "artifacts/samples/conditional_L16384_d0p1_i0_23008bb0.json": {
+      "sha256": "1764f2b47001e52f8e41b334f2467a4f5f5ec92ea68df7a2094df70f83979f42",
+      "size": 25108
+    },
+    "artifacts/samples/conditional_L16384_d0p5_i0_83cadf83.json": {
+      "sha256": "b0ebf73cbdcaee04a5198b8a56025fbd6e97fbe62acffaf30892f60e73c5164f",
+      "size": 25115
+    },
+    "artifacts/samples/conditional_L16384_d0p9_i0_bbd8c322.json": {
+      "sha256": "f79cef0c448405afc5adb22fe07ba44ee7f91dc590adb61a024faa0d2c6a632f",
+      "size": 25717
+    },
+    "artifacts/samples/conditional_L32768_d0p1_i0_0bd1fe50.json": {
+      "sha256": "5083e6275e27774409cc0f0a8cc812ac7c66e9cb924e980e888f15a89b893b35",
+      "size": 36225
+    },
+    "artifacts/samples/conditional_L32768_d0p5_i0_7cd02d47.json": {
+      "sha256": "3d7729bdc87f9b3116a2995b19947f08941bfdc18cadac6c06b8ee6c72d425cf",
+      "size": 36282
+    },
+    "artifacts/samples/conditional_L32768_d0p9_i0_03da28e1.json": {
+      "sha256": "a76a9a2c4075c64cc1b2124d5752cb92e6df5d29ac14c86707c31e3b884dd042",
+      "size": 36184
+    },
+    "artifacts/samples/conditional_L8192_d0p1_i0_35cc5e0a.json": {
+      "sha256": "62bba18627a0be3617f5a0ca8e92efb07c23a4e25a86b00d841d05e36ac96b84",
+      "size": 19457
+    },
+    "artifacts/samples/conditional_L8192_d0p5_i0_b23ab081.json": {
+      "sha256": "4c10ab6766fd1b4b36191e93ec9273cf0ff0a96289312602d521371252d7ec32",
+      "size": 19600
+    },
+    "artifacts/samples/conditional_L8192_d0p9_i0_b90cc205.json": {
+      "sha256": "2458a2ef3a9ebfb5bc0c97079cffe029e21fe7d34b99bbc59449d6bc39ab64de",
+      "size": 20236
+    },
+    "artifacts/samples/multi_needle_L16384_d0p1_i0_89d944c0.json": {
+      "sha256": "0a275b786902a64e34a2267002161a9b8624ce139d399dd185974d5ab3da42b0",
+      "size": 25805
+    },
+    "artifacts/samples/multi_needle_L16384_d0p5_i0_eef672a2.json": {
+      "sha256": "9d7c6b331827e284bd445037a9552c27dbb8ca20c1fe8fd6ee6331c3ec402190",
+      "size": 25546
+    },
+    "artifacts/samples/multi_needle_L16384_d0p9_i0_3e0212a4.json": {
+      "sha256": "e5bd755f190ba0f9572dccd04227efed3f0cb671b1b63d40e94d5db785fb5c73",
+      "size": 25398
+    },
+    "artifacts/samples/multi_needle_L32768_d0p1_i0_21d4a7da.json": {
+      "sha256": "2be58013489b2c9229f681001d544c930f8060e2cde6614045f64395340a3352",
+      "size": 36974
+    },
+    "artifacts/samples/multi_needle_L32768_d0p5_i0_1f72c0ce.json": {
+      "sha256": "245c3fb9c7b6bcef62d14509e988e2a08742cb09c0619fc2dff98814b90f1702",
+      "size": 36987
+    },
+    "artifacts/samples/multi_needle_L32768_d0p9_i0_139de250.json": {
+      "sha256": "68f6d427187017796ac9d20ef4ec32b41a91d4206e98c1cf5147ef7f0997f72e",
+      "size": 36959
+    },
+    "artifacts/samples/multi_needle_L8192_d0p1_i0_18111598.json": {
+      "sha256": "319fdec204b735fd564434fb6babc76fb99cdd600bad934a94e31d08cdb9ad12",
+      "size": 20195
+    },
+    "artifacts/samples/multi_needle_L8192_d0p5_i0_3e2816b5.json": {
+      "sha256": "dc53fd1a1f86b83f2ed011e5f004d10fbbaa39017d6fccb2337156edab07687a",
+      "size": 20281
+    },
+    "artifacts/samples/multi_needle_L8192_d0p9_i0_00c2e4be.json": {
+      "sha256": "a85266c4306eaeb81da3d95d1d314ab0b0fe6ed0308df6ac8c71e66a1206a56a",
+      "size": 19801
+    },
+    "artifacts/samples/single_needle_L16384_d0p1_i0_b7be7e4d.json": {
+      "sha256": "a6505aebe6f26888a1e16de24af2740e82ec425b5827c85a269c07c606a79f50",
+      "size": 25577
+    },
+    "artifacts/samples/single_needle_L16384_d0p5_i0_21b069fe.json": {
+      "sha256": "f83245f2b2546a2cc546b174111f8f8a1e51418e88b58f85ec81d0ed44a5ee27",
+      "size": 25306
+    },
+    "artifacts/samples/single_needle_L16384_d0p9_i0_f985db2b.json": {
+      "sha256": "6cd3314cac01fd91e6bc6b21746c290d84a6a0dd8d3a0862f448c54d3d2f56d8",
+      "size": 25679
+    },
+    "artifacts/samples/single_needle_L32768_d0p1_i0_5995da3c.json": {
+      "sha256": "ae7c39edc8910e28a15c87a9ff45726aafa8bbd89af7af179640de236a04f8d7",
+      "size": 36745
+    },
+    "artifacts/samples/single_needle_L32768_d0p5_i0_79a12a24.json": {
+      "sha256": "02dff89deb9571499e54e0d6886d53a0d0654bce9fcbbab9226e03f2fa1ce247",
+      "size": 36763
+    },
+    "artifacts/samples/single_needle_L32768_d0p9_i0_1a179305.json": {
+      "sha256": "b52c5b9c483f51f3a5fd7aa0c62e3cd7e70a56ff93ce3faa3ad5311b6095e5af",
+      "size": 36757
+    },
+    "artifacts/samples/single_needle_L8192_d0p1_i0_0ed14387.json": {
+      "sha256": "2939cb1a186e55bc819dad244837aadb7e0a6e110e4847b2c234abfd7441058b",
+      "size": 20059
+    },
+    "artifacts/samples/single_needle_L8192_d0p5_i0_ce33f2b3.json": {
+      "sha256": "39085f9a90aa32ce2e448b1332e4827712e790728a68e40e3bb4bc8a8c3be996",
+      "size": 20041
+    },
+    "artifacts/samples/single_needle_L8192_d0p9_i0_2b39ab65.json": {
+      "sha256": "e96aabc3eebea181168f502d352bde22dd9c6d28463061cd0aec11a6a5295b23",
+      "size": 19536
+    },
+    "artifacts/summary.json": {
+      "sha256": "f8c1f6752ec799feb19b690193b7720d26f01f0107af032a6b31343757850c0d",
+      "size": 8857
+    },
+    "config.yaml": {
+      "sha256": "64d20d4570e5bc866fd385bfcbad526c0f8d9541d1125e42beb5af446856f268",
+      "size": 2419
+    },
+    "logs/events.jsonl": {
+      "sha256": "ca7494a1cbeb417a6d5f82417c0020b1245667d03a2bf3a796723cdf9fe2e116",
+      "size": 14906
+    },
+    "logs/stdout.log": {
+      "sha256": "ca7494a1cbeb417a6d5f82417c0020b1245667d03a2bf3a796723cdf9fe2e116",
+      "size": 14906
+    }
+  },
+  "config": {
+    "sha256": "64d20d4570e5bc866fd385bfcbad526c0f8d9541d1125e42beb5af446856f268",
+    "snapshot": "config.yaml"
+  },
+  "duration_s": 2354.058,
+  "environment": {
+    "cpu_count": 10,
+    "cuda_available": false,
+    "machine": "arm64",
+    "mps_available": true,
+    "mps_built": true,
+    "mps_recommended_max_memory_bytes": 12713115648,
+    "platform": "macOS-27.2-arm64-arm-64bit-Mach-O",
+    "processor": "arm",
+    "python": "3.14.6",
+    "python_executable": "/Volumes/Net/E3/.venv/bin/python",
+    "ram_total_bytes": 17179869184,
+    "timestamp_utc": "2026-10-31T14:17:37Z",
+    "torch": "2.15.0",
+    "transformers": "5.22.0"
+  },
+  "extra": {
+    "arms": [
+      "C0_full",
+      "C1_stream",
+      "C3_memory",
+      "C4_memory_w1"
+    ],
+    "overrides": {
+      "arms": null,
+      "depths": null,
+      "kinds": null,
+      "lengths": null,
+      "max_new_tokens": 8,
+      "max_samples": null,
+      "samples_per_cell": 1,
+      "slots": 1024
+    },
+    "reduced": true,
+    "sample_count": 27,
+    "slot_budget": 1024
+  },
+  "finished_at": "2026-10-31T14:17:37Z",
+  "gate": "d1",
+  "model": {
+    "conv_layers": [
+      0,
+      1,
+      3,
+      5,
+      7,
+      9,
+      11,
+      13,
+      15,
+      17,
+      19,
+      21,
+      23
+    ],
+    "device": "mps",
+    "dtype": "bfloat16",
+    "file_hashes": {
+      "configuration_lfm3.py": "176cced35657aedfea7d7002221360582d1c05fcaca882c21508bc3a73b282e5",
+      "lfm3_conv.py": "80d4a985382a22774212759248a6b4c737bfbf9c2a47b3dd7f797dda748e4bb4",
+      "model.safetensors": "135922caef64e81e52af88ede8b7c3ddaa9d6da220a9737fb3065275dbfb4330",
+      "modeling_lfm3.py": "e8cd5254ea99ce6bd731b57b10908c2e8b5010ce8315341f895a38484885eeab",
+      "tokenizer.json": "7e226e34bface23ccf6e495d157bf77186c1c30a7659880e1a8994db528c3701"
+    },
+    "global_layers": [
+      2,
+      6,
+      10,
+      14,
+      18,
+      22
+    ],
+    "head_dim": 128,
+    "hidden_size": 2048,
+    "kind": "lfm3",
+    "layer_kinds": [
+      "conv",
+      "conv",
+      "full_attention",
+      "conv",
+      "sliding_attention",
+      "conv",
+      "full_attention",
+      "conv",
+      "sliding_attention",
+      "conv",
+      "full_attention",
+      "conv",
+      "sliding_attention",
+      "conv",
+      "full_attention",
+      "conv",
+      "sliding_attention",
+      "conv",
+      "full_attention",
+      "conv",
+      "sliding_attention",
+      "conv",
+      "full_attention",
+      "conv"
+    ],
+    "max_position_embeddings": 262144,
+    "model_path": "/Users/yikewang/Model/LFM3/LFM3-1.7B",
+    "model_sha256": null,
+    "num_attention_heads": 16,
+    "num_kv_heads": 4,
+    "num_layers": 24,
+    "remote_code_sha256": null,
+    "sliding_layers": [
+      4,
+      8,
+      12,
+      16,
+      20
+    ],
+    "sliding_window": 256,
+    "tokenizer_sha256": null,
+    "vocab_size": 128000
+  },
+  "run_id": "20261031T133823Z_d1_d1_niah_lfm3_slots1024_reduced_64d20d45",
+  "schema_version": 1,
+  "source_tree": {
+    "files": 32,
+    "src_sprm_sha256": "cfa6ec99f6bdc51ac0f13c399bb0c7e438b2f464bed64770015614b7ef057089"
+  },
+  "started_at": "2026-10-31T13:38:23Z",
+  "status": "FAIL",
+  "verdict": "FAIL: memory C3-C1 far 0.2222 (2/3 kinds, p=0.3125); writeback C4-C3 far 0.0000 (0/3 kinds, p=1.0000)"
+}

@@ -1,0 +1,687 @@
+{
+  "arms": {
+    "C0_full": {
+      "arm_id": "C0_full",
+      "build_s": 0.0,
+      "decode_s": 0.36112566699739546,
+      "effective_length": 8215,
+      "error": null,
+      "generated_code": "72395",
+      "generated_correct": true,
+      "prefill_s": 9.048932208039332,
+      "result": {
+        "arm_id": "C0_full",
+        "condition_number_final": NaN,
+        "context_length": 8192,
+        "depth": 0.1,
+        "diagnostics": {
+          "attribute": "south",
+          "build": {},
+          "build_s": 0.0,
+          "cache_bytes": 103929856,
+          "candidate_logprobs": {
+            "56905": -16.855087280273438,
+            "68567": -14.917984008789062,
+            "69312": -2.8463801064062864,
+            "72395": -0.09435073123313487
+          },
+          "candidate_probabilities": {
+            "56905": 4.943620886014444e-08,
+            "68567": 3.43019192380361e-07,
+            "69312": 0.05997211741618039,
+            "72395": 0.9400274901284185
+          },
+          "context_token_sha256": "35cc5e0a8b797bb85f00c8e7417ad8ca73fc2a68011d092f9772d5b53eb58349",
+          "correct_index": 3,
+          "decode_s": 0.36112566699739546,
+          "distance_from_end": 7373,
+          "effective_length": 8215,
+          "eta_final": 0.05,
+          "eta_ratio": 1.0,
+          "eta_steps": 1,
+          "expected_answer_text": "72395",
+          "generated_code": "72395",
+          "generated_correct": true,
+          "gold_candidate_probability": 0.9400274901284185,
+          "gold_candidate_rank": 1,
+          "needle_position": 819,
+          "options": [
+            "69312",
+            "68567",
+            "56905",
+            "72395"
+          ],
+          "owner": "registrar",
+          "prefill_s": 9.048932208039332,
+          "score_s": 0.33304929197765887,
+          "step_entropy_mean": 0.6304077371023595
+        },
+        "elapsed_s": 9.743107167014387,
+        "exact_match": true,
+        "generated_text": "72395.</think>The south passkey",
+        "generated_token_ids": [
+          25596,
+          2311,
+          22,
+          124902,
+          597,
+          5754,
+          1729,
+          4016
+        ],
+        "gold_answer": "72395",
+        "gold_first_token_logprob": -0.09435073123313487,
+        "gold_first_token_rank": 1,
+        "kv_bytes_per_token": 12686,
+        "memory_bytes": 0,
+        "peak_memory_bytes": 3948068864,
+        "predicted_answer": "72395",
+        "recon_error_final": NaN,
+        "recon_error_trajectory": [],
+        "sample_id": "conditional_L8192_d0p1_i0_35cc5e0a",
+        "task_kind": "conditional",
+        "trust_scaled_count": 0
+      },
+      "score": {
+        "correct": true,
+        "gold_code": "72395",
+        "gold_logprob": -0.09435073123313487,
+        "gold_probability": 0.9400274901284185,
+        "gold_rank": 1,
+        "logprobs": {
+          "56905": -16.855087280273438,
+          "68567": -14.917984008789062,
+          "69312": -2.8463801064062864,
+          "72395": -0.09435073123313487
+        },
+        "predicted_code": "72395",
+        "probabilities": {
+          "56905": 4.943620886014444e-08,
+          "68567": 3.43019192380361e-07,
+          "69312": 0.05997211741618039,
+          "72395": 0.9400274901284185
+        }
+      },
+      "score_s": 0.33304929197765887
+    },
+    "C1_stream": {
+      "arm_id": "C1_stream",
+      "build_s": 0.0,
+      "decode_s": 0.08022779098246247,
+      "effective_length": 2177,
+      "error": null,
+      "generated_code": null,
+      "generated_correct": false,
+      "prefill_s": 9.312408125028014,
+      "result": {
+        "arm_id": "C1_stream",
+        "condition_number_final": NaN,
+        "context_length": 8192,
+        "depth": 0.1,
+        "diagnostics": {
+          "attribute": "south",
+          "build": {},
+          "build_s": 0.0,
+          "cache_bytes": 29734912,
+          "candidate_logprobs": {
+            "56905": -14.187333106994629,
+            "68567": -14.113701820373535,
+            "69312": -13.164619445800781,
+            "72395": -15.730247974395752
+          },
+          "candidate_probabilities": {
+            "56905": 0.19720375101108192,
+            "68567": 0.21227205917900815,
+            "69312": 0.5483704841775979,
+            "72395": 0.042153705632312015
+          },
+          "context_token_sha256": "35cc5e0a8b797bb85f00c8e7417ad8ca73fc2a68011d092f9772d5b53eb58349",
+          "correct_index": 3,
+          "decode_s": 0.08022779098246247,
+          "distance_from_end": 7373,
+          "effective_length": 2177,
+          "eta_final": 0.05,
+          "eta_ratio": 1.0,
+          "eta_steps": 1,
+          "expected_answer_text": "72395",
+          "generated_code": null,
+          "generated_correct": false,
+          "gold_candidate_probability": 0.042153705632312015,
+          "gold_candidate_rank": 4,
+          "needle_position": 819,
+          "options": [
+            "69312",
+            "68567",
+            "56905",
+            "72395"
+          ],
+          "owner": "registrar",
+          "prefill_s": 9.312408125028014,
+          "score_s": 0.2966434580157511,
+          "step_entropy_mean": 4.044638395309448
+        },
+        "elapsed_s": 9.689279374026228,
+        "exact_match": false,
+        "generated_text": "0",
+        "generated_token_ids": [
+          24,
+          124900
+        ],
+        "gold_answer": "72395",
+        "gold_first_token_logprob": -15.730247974395752,
+        "gold_first_token_rank": 4,
+        "kv_bytes_per_token": 3629,
+        "memory_bytes": 0,
+        "peak_memory_bytes": 3711090688,
+        "predicted_answer": "69312",
+        "recon_error_final": NaN,
+        "recon_error_trajectory": [],
+        "sample_id": "conditional_L8192_d0p1_i0_35cc5e0a",
+        "task_kind": "conditional",
+        "trust_scaled_count": 0
+      },
+      "score": {
+        "correct": false,
+        "gold_code": "72395",
+        "gold_logprob": -15.730247974395752,
+        "gold_probability": 0.042153705632312015,
+        "gold_rank": 4,
+        "logprobs": {
+          "56905": -14.187333106994629,
+          "68567": -14.113701820373535,
+          "69312": -13.164619445800781,
+          "72395": -15.730247974395752
+        },
+        "predicted_code": "69312",
+        "probabilities": {
+          "56905": 0.19720375101108192,
+          "68567": 0.21227205917900815,
+          "69312": 0.5483704841775979,
+          "72395": 0.042153705632312015
+        }
+      },
+      "score_s": 0.2966434580157511
+    },
+    "C3_memory": {
+      "arm_id": "C3_memory",
+      "build_s": 10.758226457983255,
+      "decode_s": 0.15093158301897347,
+      "effective_length": 4226,
+      "error": null,
+      "generated_code": null,
+      "generated_correct": false,
+      "prefill_s": 5.830079317092896e-07,
+      "result": {
+        "arm_id": "C3_memory",
+        "condition_number_final": 506531.12015022495,
+        "context_length": 8192,
+        "depth": 0.1,
+        "diagnostics": {
+          "attribute": "south",
+          "build": {
+            "block_ranges": [
+              [
+                128,
+                640
+              ],
+              [
+                640,
+                1152
+              ],
+              [
+                1152,
+                1664
+              ],
+              [
+                1664,
+                2176
+              ],
+              [
+                2176,
+                2688
+              ],
+              [
+                2688,
+                3200
+              ],
+              [
+                3200,
+                3712
+              ],
+              [
+                3712,
+                4224
+              ],
+              [
+                4224,
+                4736
+              ],
+              [
+                4736,
+                5248
+              ],
+              [
+                5248,
+                5760
+              ],
+              [
+                5760,
+                6160
+              ]
+            ],
+            "build_seconds": 10.758226457983255,
+            "condition_checks": {
+              "10": [
+                123.30648196197026,
+                248913.96608479475
+              ],
+              "14": [
+                127.3898861878633,
+                144436.03614746835
+              ],
+              "18": [
+                678.7948806869874,
+                500609.9387821934
+              ],
+              "2": [
+                174.00830620846634,
+                500413.56399939803
+              ],
+              "22": [
+                201.9291881285913,
+                506531.12015022495
+              ],
+              "6": [
+                143.85684092788566,
+                135206.75657110184
+              ]
+            },
+            "forgetting_events": 0,
+            "importances": [
+              4.2848958770434065,
+              4.2201464374860125,
+              4.195431093374888,
+              4.08959315220515,
+              4.129582385222117,
+              4.101230661074321,
+              4.232812861601512,
+              3.92474365234375,
+              4.261675457159678,
+              3.9488075971603394,
+              4.092295249303182,
+              4.386704603830974
+            ],
+            "slot_offsets": [
+              0,
+              226,
+              738,
+              873,
+              1008,
+              1139,
+              1275,
+              1421,
+              1557,
+              1696,
+              1815,
+              1939
+            ],
+            "slots_per_block": [
+              226,
+              512,
+              135,
+              135,
+              131,
+              136,
+              146,
+              136,
+              139,
+              119,
+              124,
+              109
+            ]
+          },
+          "build_s": 10.758226457983255,
+          "cache_bytes": 80275456,
+          "candidate_logprobs": {
+            "56905": -13.089707374572754,
+            "68567": -12.64479923248291,
+            "69312": -7.835731506347656,
+            "72395": -6.62395977973938
+          },
+          "candidate_probabilities": {
+            "56905": 0.0011952708110604439,
+            "68567": 0.0018650370557497613,
+            "69312": 0.22868571745396282,
+            "72395": 0.768253974679227
+          },
+          "context_token_sha256": "35cc5e0a8b797bb85f00c8e7417ad8ca73fc2a68011d092f9772d5b53eb58349",
+          "correct_index": 3,
+          "decode_s": 0.15093158301897347,
+          "distance_from_end": 7373,
+          "effective_length": 4226,
+          "eta_final": 0.05,
+          "eta_ratio": 1.0,
+          "eta_steps": 1,
+          "expected_answer_text": "72395",
+          "generated_code": null,
+          "generated_correct": false,
+          "gold_candidate_probability": 0.768253974679227,
+          "gold_candidate_rank": 1,
+          "needle_position": 819,
+          "options": [
+            "69312",
+            "68567",
+            "56905",
+            "72395"
+          ],
+          "owner": "registrar",
+          "prefill_s": 5.830079317092896e-07,
+          "score_s": 0.31448770803399384,
+          "step_entropy_mean": 4.267149567604065
+        },
+        "elapsed_s": 11.223646332044154,
+        "exact_match": true,
+        "generated_text": "0",
+        "generated_token_ids": [
+          24,
+          124900
+        ],
+        "gold_answer": "72395",
+        "gold_first_token_logprob": -6.62395977973938,
+        "gold_first_token_rank": 1,
+        "kv_bytes_per_token": 9799,
+        "memory_bytes": 25362432,
+        "peak_memory_bytes": 4919050240,
+        "predicted_answer": "72395",
+        "recon_error_final": 0.5596533020337423,
+        "recon_error_trajectory": [
+          0.5596533020337423
+        ],
+        "sample_id": "conditional_L8192_d0p1_i0_35cc5e0a",
+        "task_kind": "conditional",
+        "trust_scaled_count": 0
+      },
+      "score": {
+        "correct": true,
+        "gold_code": "72395",
+        "gold_logprob": -6.62395977973938,
+        "gold_probability": 0.768253974679227,
+        "gold_rank": 1,
+        "logprobs": {
+          "56905": -13.089707374572754,
+          "68567": -12.64479923248291,
+          "69312": -7.835731506347656,
+          "72395": -6.62395977973938
+        },
+        "predicted_code": "72395",
+        "probabilities": {
+          "56905": 0.0011952708110604439,
+          "68567": 0.0018650370557497613,
+          "69312": 0.22868571745396282,
+          "72395": 0.768253974679227
+        }
+      },
+      "score_s": 0.31448770803399384
+    },
+    "C4_memory_w1": {
+      "arm_id": "C4_memory_w1",
+      "build_s": 10.758226457983255,
+      "decode_s": 0.2388808330288157,
+      "effective_length": 4226,
+      "error": null,
+      "generated_code": null,
+      "generated_correct": false,
+      "prefill_s": 5.830079317092896e-07,
+      "result": {
+        "arm_id": "C4_memory_w1",
+        "condition_number_final": 501556.4226351775,
+        "context_length": 8192,
+        "depth": 0.1,
+        "diagnostics": {
+          "attribute": "south",
+          "build": {
+            "block_ranges": [
+              [
+                128,
+                640
+              ],
+              [
+                640,
+                1152
+              ],
+              [
+                1152,
+                1664
+              ],
+              [
+                1664,
+                2176
+              ],
+              [
+                2176,
+                2688
+              ],
+              [
+                2688,
+                3200
+              ],
+              [
+                3200,
+                3712
+              ],
+              [
+                3712,
+                4224
+              ],
+              [
+                4224,
+                4736
+              ],
+              [
+                4736,
+                5248
+              ],
+              [
+                5248,
+                5760
+              ],
+              [
+                5760,
+                6160
+              ]
+            ],
+            "build_seconds": 10.758226457983255,
+            "condition_checks": {
+              "10": [
+                123.30648196197026,
+                248913.96608479475
+              ],
+              "14": [
+                127.3898861878633,
+                144436.03614746835
+              ],
+              "18": [
+                678.7948806869874,
+                500609.9387821934
+              ],
+              "2": [
+                174.00830620846634,
+                500413.56399939803
+              ],
+              "22": [
+                201.9291881285913,
+                506531.12015022495
+              ],
+              "6": [
+                143.85684092788566,
+                135206.75657110184
+              ]
+            },
+            "forgetting_events": 0,
+            "importances": [
+              4.2848958770434065,
+              4.2201464374860125,
+              4.195431093374888,
+              4.08959315220515,
+              4.129582385222117,
+              4.101230661074321,
+              4.232812861601512,
+              3.92474365234375,
+              4.261675457159678,
+              3.9488075971603394,
+              4.092295249303182,
+              4.386704603830974
+            ],
+            "slot_offsets": [
+              0,
+              226,
+              738,
+              873,
+              1008,
+              1139,
+              1275,
+              1421,
+              1557,
+              1696,
+              1815,
+              1939
+            ],
+            "slots_per_block": [
+              226,
+              512,
+              135,
+              135,
+              131,
+              136,
+              146,
+              136,
+              139,
+              119,
+              124,
+              109
+            ]
+          },
+          "build_s": 10.758226457983255,
+          "cache_bytes": 80275456,
+          "candidate_logprobs": {
+            "56905": -13.107050895690918,
+            "68567": -12.631375789642334,
+            "69312": -7.820806264877319,
+            "72395": -6.535173177719116
+          },
+          "candidate_probabilities": {
+            "56905": 0.0010929921210339917,
+            "68567": 0.0017587337794778642,
+            "69312": 0.21597520974810783,
+            "72395": 0.7811730643513803
+          },
+          "context_token_sha256": "35cc5e0a8b797bb85f00c8e7417ad8ca73fc2a68011d092f9772d5b53eb58349",
+          "correct_index": 3,
+          "decode_s": 0.2388808330288157,
+          "distance_from_end": 7373,
+          "effective_length": 4226,
+          "eta_final": 0.05,
+          "eta_ratio": 1.0,
+          "eta_steps": 1,
+          "expected_answer_text": "72395",
+          "generated_code": null,
+          "generated_correct": false,
+          "gold_candidate_probability": 0.7811730643513803,
+          "gold_candidate_rank": 1,
+          "needle_position": 819,
+          "options": [
+            "69312",
+            "68567",
+            "56905",
+            "72395"
+          ],
+          "owner": "registrar",
+          "prefill_s": 5.830079317092896e-07,
+          "score_s": 0.8667532920371741,
+          "step_entropy_mean": 4.267149567604065
+        },
+        "elapsed_s": 11.863861166057177,
+        "exact_match": true,
+        "generated_text": "0",
+        "generated_token_ids": [
+          24,
+          124900
+        ],
+        "gold_answer": "72395",
+        "gold_first_token_logprob": -6.535173177719116,
+        "gold_first_token_rank": 1,
+        "kv_bytes_per_token": 9799,
+        "memory_bytes": 25362432,
+        "peak_memory_bytes": 4919050240,
+        "predicted_answer": "72395",
+        "recon_error_final": 0.5596532026926676,
+        "recon_error_trajectory": [
+          0.5596532026926676
+        ],
+        "sample_id": "conditional_L8192_d0p1_i0_35cc5e0a",
+        "task_kind": "conditional",
+        "trust_scaled_count": 0
+      },
+      "score": {
+        "correct": true,
+        "gold_code": "72395",
+        "gold_logprob": -6.535173177719116,
+        "gold_probability": 0.7811730643513803,
+        "gold_rank": 1,
+        "logprobs": {
+          "56905": -13.107050895690918,
+          "68567": -12.631375789642334,
+          "69312": -7.820806264877319,
+          "72395": -6.535173177719116
+        },
+        "predicted_code": "72395",
+        "probabilities": {
+          "56905": 0.0010929921210339917,
+          "68567": 0.0017587337794778642,
+          "69312": 0.21597520974810783,
+          "72395": 0.7811730643513803
+        }
+      },
+      "score_s": 0.8667532920371741
+    }
+  },
+  "build_s": 10.758226457983255,
+  "error": null,
+  "prefill_s": 18.361340916075278,
+  "sample": {
+    "context_length": 8192,
+    "depth": 0.1,
+    "gold_answer": "72395",
+    "metadata": {
+      "attribute": "south",
+      "code": "72395",
+      "context_token_sha256": "35cc5e0a8b797bb85f00c8e7417ad8ca73fc2a68011d092f9772d5b53eb58349",
+      "correct_index": 3,
+      "distance_from_end": 7373,
+      "filler_seed": 7101,
+      "needle_position": 819,
+      "needle_positions": [
+        [
+          819,
+          841
+        ]
+      ],
+      "needle_seed": 9107,
+      "options": [
+        "69312",
+        "68567",
+        "56905",
+        "72395"
+      ],
+      "owner": "registrar",
+      "sentences": [
+        " The south passkey for registrar is 72395.",
+        " The red passkey for registrar is 69312."
+      ],
+      "task_index": 0
+    },
+    "prompt_tokens": 8208,
+    "sample_id": "conditional_L8192_d0p1_i0_35cc5e0a",
+    "task_kind": "conditional"
+  }
+}

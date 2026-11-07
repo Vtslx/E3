@@ -7,6 +7,7 @@ existing run.
 
 from __future__ import annotations
 
+import hashlib
 import math
 import tempfile
 import time
@@ -28,14 +29,16 @@ from sprm.eval.runner import SampleRun, run_experiment, summarize_accuracy
 from sprm.logging import JsonLogger
 from sprm.memory.allocator import allocate_slots
 from sprm.memory.associative import AssociativeMemory, AssociativeMemoryConfig
+from sprm.runtime.draft_heads import DraftHeadProposer
 from sprm.runtime.form_a import (
     ExactWindow,
     assemble_effective_global,
+    cache_footprint_bytes,
     decode_arm,
     exact_window_from_cache,
     prefill_online,
 )
-from sprm.runtime.speculative import PromptLookup, decode_speculative
+from sprm.runtime.speculative import PromptLookup, ReservoirLookup, decode_speculative
 from sprm.verification.archive import RunArchive, verify_run
 
 
@@ -649,8 +652,9 @@ def gate_d5(
     archive: RunArchive | None = None,
     max_decode_tokens: int | None = None,
     max_samples: int = 2,
+    arm_id: str = "C4_memory_w1",
 ) -> GateOutcome:
-    """Closed-loop stability: condition bound and window-reconstruction shrinkage.
+    """Closed-loop stability: condition bound and reconstruction shrinkage.
 
     This gate exercises what the harness actually implements: the trust region, W1 writes,
     and the slot refresh over a long decode. It does **not** exercise anchors, replay, or eta
@@ -658,9 +662,11 @@ def gate_d5(
     the minimum window-reconstruction shrinkage ratio (head/tail); a value below 1 means the
     reconstruction error grew.
     """
-    arm_id = "C4_memory_w1"
-    if arm_id not in experiment.arms or not experiment.arms[arm_id].writeback:
-        raise ConfigError("D5 requires the C4_memory_w1 arm with writeback enabled")
+    if arm_id not in experiment.arms:
+        raise ConfigError(f"D5 arm {arm_id!r} is not configured")
+    arm = experiment.arms[arm_id]
+    if not arm.memory:
+        raise ConfigError(f"D5 arm {arm_id!r} has no memory")
     decode_tokens = (
         experiment.runtime.long_decode_tokens if max_decode_tokens is None else int(max_decode_tokens)
     )
@@ -701,7 +707,7 @@ def gate_d5(
             else None
         )
         del exact_cache
-        allocation = experiment.arms[arm_id].allocation
+        allocation = arm.allocation
         if allocation == "attention" and not importances:
             allocation = "uniform"
             importances = None
@@ -727,7 +733,7 @@ def gate_d5(
             backend,
             cache,
             experiment,
-            experiment.arms[arm_id],
+            arm,
             first_logits=prefill.logits,
             start_position=len(prompt),
             max_new_tokens=decode_tokens,
@@ -780,26 +786,49 @@ def gate_d5(
             "condition_bounded",
             math.isfinite(max_condition) and max_condition <= experiment.gates.d5_max_condition,
             {"max": max_condition, "limit": experiment.gates.d5_max_condition},
-        ),
-        Check(
-            "writeback_shrinkage",
-            math.isfinite(min_generated_shrinkage)
-            and min_generated_shrinkage >= experiment.gates.d5_min_eta_ratio,
-            {"min": min_generated_shrinkage, "limit": experiment.gates.d5_min_eta_ratio},
-        ),
+        )
+    ]
+    if arm.writeback:
+        checks.append(
+            Check(
+                "writeback_shrinkage",
+                math.isfinite(min_generated_shrinkage)
+                and min_generated_shrinkage >= experiment.gates.d5_min_eta_ratio,
+                {"min": min_generated_shrinkage, "limit": experiment.gates.d5_min_eta_ratio},
+            )
+        )
+        gating_label = "generated-token (W1)"
+        diagnostics = [
+            Check(
+                "full_window_shrinkage_diagnostic",
+                math.isfinite(min_shrinkage) and min_shrinkage >= experiment.gates.d5_min_eta_ratio,
+                {"min": min_shrinkage, "limit": experiment.gates.d5_min_eta_ratio},
+            )
+        ]
+    else:
+        checks.append(
+            Check(
+                "memory_shrinkage",
+                math.isfinite(min_shrinkage) and min_shrinkage >= experiment.gates.d5_min_eta_ratio,
+                {"min": min_shrinkage, "limit": experiment.gates.d5_min_eta_ratio},
+            )
+        )
+        gating_label = "full-window (memory-only C3)"
+        diagnostics = [
+            Check(
+                "generated_shrinkage_diagnostic",
+                math.isfinite(min_generated_shrinkage)
+                and min_generated_shrinkage >= experiment.gates.d5_min_eta_ratio,
+                {"min": min_generated_shrinkage, "limit": experiment.gates.d5_min_eta_ratio},
+            )
+        ]
+    checks.append(
         Check(
             "decode_completed",
             all(row["decoded_tokens"] >= decode_tokens for row in rows),
             {row["sample_id"]: row["decoded_tokens"] for row in rows},
-        ),
-    ]
-    diagnostics = [
-        Check(
-            "full_window_shrinkage_diagnostic",
-            math.isfinite(min_shrinkage) and min_shrinkage >= experiment.gates.d5_min_eta_ratio,
-            {"min": min_shrinkage, "limit": experiment.gates.d5_min_eta_ratio},
         )
-    ]
+    )
     if archive is not None:
         archive.write_json("artifacts/rows.json", rows)
         archive.write_json("artifacts/checks.json", [check.as_dict() for check in checks])
@@ -831,19 +860,18 @@ def gate_d5(
             "",
             _check_table(diagnostics),
             "",
-            f"Verdict: **{status}**. The gating shrinkage uses the generated-token window, the part W1",
-            "actually writes. The full-window shrinkage is diagnostic: most of that window is prefill",
-            "KV that W1 never wrote. Anchors, bounded replay, and eta adaptation are implemented and",
-            "reported above.",
+            f"Verdict: **{status}**. The gating shrinkage is {gating_label}. For C4 the full-window",
+            "value is diagnostic because most of that window is prefill KV that W1 never wrote; for C3",
+            "the full-window value is the memory shrinkage and the generated value is diagnostic.",
+            "Key regularization clamps the key spectrum on every build; anchors/replay/eta are W1-only",
         ]
     )
     claims = (
         "# Claims for D5\n\n"
-        "Establishes: over a long W1 decode with the implemented trust region, anchors, bounded\n"
-        "replay, eta adaptation, and slot refresh, whether (1) the key-matrix condition stays\n"
-        "below the configured bound and (2) the generated-token reconstruction error shrinks.\n"
-        "The full-window shrinkage is reported separately as a diagnostic because the prefill\n"
-        "window is Tier-1 exact and was never W1-written.\n\n"
+        "Establishes: over a long decode, whether (1) the regularized key-matrix condition\n"
+        "stays below the configured bound and (2) reconstruction shrinks. For C4 the gating\n"
+        "shrinkage is the generated-token window (W1); for C3 it is the full-window memory\n"
+        "shrinkage. The other window is reported as a diagnostic.\n\n"
         "Does not establish: distribution equivalence, long-text task accuracy, or a learned\n"
         "memory representation.\n"
     )
@@ -950,6 +978,13 @@ def gate_s1(
     )
     speedup = speculative_tps / baseline_tps if baseline_tps > 0 else float("nan")
     output_match = baseline_ids == speculative.generated
+    divergent = [
+        index
+        for index in range(min(len(baseline_ids), len(speculative.generated)))
+        if baseline_ids[index] != speculative.generated[index]
+    ]
+    divergence_index = divergent[0] if divergent else None
+    divergence_tokens = len(divergent) + abs(len(baseline_ids) - len(speculative.generated))
     acceptance = (
         speculative.accepted_tokens / speculative.proposed_tokens
         if speculative.proposed_tokens
@@ -978,6 +1013,8 @@ def gate_s1(
                 "speculative_tokens_per_s": speculative_tps,
                 "speedup": speedup,
                 "output_match": output_match,
+                "divergence_index": divergence_index,
+                "divergence_tokens": divergence_tokens,
                 "proposed_tokens": speculative.proposed_tokens,
                 "accepted_tokens": speculative.accepted_tokens,
                 "full_accepts": speculative.full_accepts,
@@ -1033,12 +1070,306 @@ def gate_s1(
             "speculative_tokens_per_s": speculative_tps,
             "speedup": speedup,
             "output_match": output_match,
+            "divergence_index": divergence_index,
+            "divergence_tokens": divergence_tokens,
             "acceptance": acceptance,
             "proposed_tokens": speculative.proposed_tokens,
             "accepted_tokens": speculative.accepted_tokens,
             "full_accepts": speculative.full_accepts,
             "verify_calls": speculative.verify_calls,
             "fallback_calls": speculative.fallback_calls,
+            "checks": [check.as_dict() for check in checks],
+        },
+        report=report,
+        claims=claims,
+        checks=checks,
+        model_info=backend.info.as_dict() | {"file_hashes": backend.file_hashes()},
+    )
+
+
+# ====================================================================== S2
+def gate_s2(
+    backend: Lfm3Backend,
+    experiment: ExperimentConfig,
+    logger: JsonLogger,
+    *,
+    archive: RunArchive | None = None,
+    max_new_tokens: int = 32,
+    gamma: int = 4,
+    ngram: int = 3,
+    arm_id: str = "C3_memory",
+    prompt_text: str | None = None,
+    prompt_tokens: int = 4096,
+    partial_accept: bool = False,
+    proposer_kind: str = "prompt",
+    draft_head: str | None = None,
+) -> GateOutcome:
+    """Speculative decoding on a natural-text prompt and, optionally, the memory arm.
+
+    S1 is a mechanism test on repeated text with exact KV. S2 measures the same mechanism
+    on non-repetitive prose and on a compressed C3 cache. The greedy baseline runs without
+    the per-step reconstruction diagnostics, so the tokens/s comparison is generation work
+    against generation work. The output must stay token-identical to greedy.
+    """
+    if max_new_tokens < 1 or gamma < 1 or ngram < 1:
+        raise ConfigError("S2 needs positive max_new_tokens, gamma, and ngram")
+    if proposer_kind not in {"prompt", "reservoir"}:
+        raise ConfigError(f"unknown proposer {proposer_kind!r}")
+    if arm_id not in experiment.arms:
+        raise ConfigError(f"unknown arm {arm_id!r}; configured={sorted(experiment.arms)}")
+    arm = experiment.arms[arm_id]
+    if prompt_text is None:
+        prompt_text = (
+            "The archive room is quiet and the shelves are labelled by year. "
+            "A passkey is written on the card beside the door."
+        )
+    prompt = backend.tokenize(prompt_text)
+    if prompt_tokens > 0:
+        prompt = prompt[:prompt_tokens]
+    threshold = experiment.tier1.sink_tokens + experiment.tier1.window_tokens
+    if arm.memory and len(prompt) <= threshold:
+        raise ConfigError(
+            f"S2 memory arm needs more than {threshold} prompt tokens for an eviction; got {len(prompt)}"
+        )
+    if len(prompt) < 8:
+        raise ConfigError("S2 prompt is too short")
+
+    if arm.memory:
+        online = prefill_online(backend, experiment, prompt, use_memory=True, allocation="uniform")
+        cache = online.cache
+        logits = online.logits
+        build = online.build
+        if build is None:
+            raise ConfigError("S2 memory prefill built no memory; prompt did not evict a block")
+    else:
+        cache, logits, _ = backend.prefill_exact(
+            prompt, chunk_tokens=experiment.tier1.prefill_chunk_tokens
+        )
+        build = None
+
+    baseline_cache = cache.clone()
+    baseline_window = exact_window_from_cache(
+        backend,
+        baseline_cache,
+        capacity=experiment.tier1.window_tokens,
+        full_length=len(prompt),
+    )
+    baseline_build = build.clone() if (build is not None and arm.writeback) else build
+    t0 = time.perf_counter()
+    baseline = decode_arm(
+        backend,
+        baseline_cache,
+        experiment,
+        arm,
+        first_logits=logits,
+        start_position=len(prompt),
+        max_new_tokens=max_new_tokens,
+        exact_window=baseline_window,
+        build=baseline_build,
+        eostoken_id=None,
+        diagnostics=False,
+    )
+    baseline_s = time.perf_counter() - t0
+    baseline_ids = [step.token_id for step in baseline.steps]
+
+    speculative_cache = cache.clone()
+    speculative_window = exact_window_from_cache(
+        backend,
+        speculative_cache,
+        capacity=experiment.tier1.window_tokens,
+        full_length=len(prompt),
+    )
+    speculative_build = build.clone() if (build is not None and arm.writeback) else build
+    proposer = (
+        DraftHeadProposer(backend, draft_head, gamma=gamma)
+        if draft_head is not None
+        else (
+            ReservoirLookup(list(prompt), n=ngram, gamma=gamma)
+            if proposer_kind == "reservoir"
+            else PromptLookup(list(prompt), n=ngram, gamma=gamma)
+        )
+    )
+    t0 = time.perf_counter()
+    speculative = decode_speculative(
+        backend,
+        speculative_cache,
+        experiment,
+        arm,
+        first_logits=logits,
+        start_position=len(prompt),
+        max_new_tokens=max_new_tokens,
+        exact_window=speculative_window,
+        build=speculative_build,
+        eostoken_id=None,
+        proposer=proposer,
+        partial_accept=partial_accept,
+    )
+    speculative_s = time.perf_counter() - t0
+
+    baseline_tps = len(baseline_ids) / baseline_s if baseline_s > 0 else float("nan")
+    speculative_tps = (
+        len(speculative.generated) / speculative_s if speculative_s > 0 else float("nan")
+    )
+    speedup = speculative_tps / baseline_tps if baseline_tps > 0 else float("nan")
+    output_match = baseline_ids == speculative.generated
+    divergent = [
+        index
+        for index in range(min(len(baseline_ids), len(speculative.generated)))
+        if baseline_ids[index] != speculative.generated[index]
+    ]
+    divergence_index = divergent[0] if divergent else None
+    divergence_tokens = len(divergent) + abs(len(baseline_ids) - len(speculative.generated))
+    acceptance = (
+        speculative.accepted_tokens / speculative.proposed_tokens
+        if speculative.proposed_tokens
+        else float("nan")
+    )
+    full_accept_rate = (
+        speculative.full_accepts / speculative.verify_calls
+        if speculative.verify_calls
+        else float("nan")
+    )
+    prompt_sha = hashlib.sha256(prompt_text.encode("utf-8")).hexdigest()
+    footprint: dict[str, Any] = {}
+    if build is not None:
+        cache_bytes, per_token = cache_footprint_bytes(
+            backend, speculative_cache, build, context_length=len(prompt)
+        )
+        footprint = {
+            "memory_bytes": build.memory_bytes(),
+            "cache_bytes": cache_bytes,
+            "kv_bytes_per_token": per_token,
+        }
+
+    checks = [
+        Check("output_matches_greedy", output_match, f"{len(baseline_ids)} tokens"),
+        Check("draft_proposed", speculative.proposed_tokens > 0, speculative.proposed_tokens),
+        Check(
+            "acceptance_target",
+            math.isfinite(acceptance) and acceptance >= 0.5,
+            {"acceptance": acceptance, "target": 0.5},
+        ),
+        Check(
+            "net_speedup_target",
+            math.isfinite(speedup) and speedup >= 1.3,
+            {"speedup": speedup, "target": 1.3},
+        ),
+    ]
+    if archive is not None:
+        archive.write_json(
+            "artifacts/summary.json",
+            {
+                "prompt_sha256": prompt_sha,
+                "prompt_tokens": len(prompt),
+                "arm": arm_id,
+                "proposer": proposer_kind,
+                "draft_head": draft_head,
+                "partial_accept": partial_accept,
+                "max_new_tokens": max_new_tokens,
+                "gamma": gamma,
+                "ngram": ngram,
+                "baseline_seconds": baseline_s,
+                "speculative_seconds": speculative_s,
+                "baseline_tokens_per_s": baseline_tps,
+                "speculative_tokens_per_s": speculative_tps,
+                "speedup": speedup,
+                "output_match": output_match,
+                "divergence_index": divergence_index,
+                "divergence_tokens": divergence_tokens,
+                "proposed_tokens": speculative.proposed_tokens,
+                "accepted_tokens": speculative.accepted_tokens,
+                "full_accepts": speculative.full_accepts,
+                "partial_accepts": speculative.partial_accepts,
+                "verify_calls": speculative.verify_calls,
+                "fallback_calls": speculative.fallback_calls,
+                "acceptance": acceptance,
+                "full_accept_rate": full_accept_rate,
+                "baseline_ids": baseline_ids,
+                "speculative_ids": speculative.generated,
+                **footprint,
+            },
+        )
+        archive.write_json("artifacts/checks.json", [check.as_dict() for check in checks])
+    logger.info("s2_checks", checks=[check.as_dict() for check in checks])
+    passed = _all_pass(checks)
+    status = "PASS" if passed else "FAIL"
+    report = "\n".join(
+        [
+            "# S2 speculative decoding on natural text / memory arm",
+            "",
+            f"Arm: `{arm_id}`; proposer: `{proposer_kind}`"
+            + (f" (draft head `{draft_head}`)" if draft_head else "")
+            + f"; partial accept: {partial_accept}.",
+            f"Prompt: {len(prompt)} tokens (sha256 `{prompt_sha[:12]}`); decode budget: {max_new_tokens}; "
+            f"gamma={gamma}, ngram={ngram}.",
+            "",
+            "| run | seconds | tokens/s |",
+            "|-----|---------|----------|",
+            f"| greedy | {_fmt(baseline_s)} | {_fmt(baseline_tps)} |",
+            f"| speculative | {_fmt(speculative_s)} | {_fmt(speculative_tps)} |",
+            "",
+            f"- net speedup: **{_fmt(speedup)}x** (target 1.3x)",
+            f"- output identical to greedy: **{output_match}**"
+            + (f" (first divergence at {divergence_index}; {divergence_tokens} tokens differ)" if not output_match else ""),
+            f"- acceptance: **{_fmt(acceptance)}** (target 0.5); full-accept rate {_fmt(full_accept_rate)}",
+            f"- proposed {speculative.proposed_tokens}, accepted {speculative.accepted_tokens}, "
+            f"full {speculative.full_accepts}, partial {speculative.partial_accepts}, "
+            f"verify {speculative.verify_calls}, fallbacks {speculative.fallback_calls}",
+        ]
+        + (
+            [
+                "",
+                f"- memory {footprint['memory_bytes'] / 2**20:.1f} MiB; "
+                f"{footprint['kv_bytes_per_token']} KV B/token at {len(prompt)} prompt tokens",
+            ]
+            if footprint
+            else []
+        )
+        + [
+            "",
+            _check_table(checks),
+            "",
+            f"Verdict: **{status}**.",
+        ]
+    )
+    claims = (
+        "# Claims for S2\n\n"
+        "Establishes: on the stated prompt and arm, the prompt-lookup/reservoir draft's\n"
+        "token acceptance, the speculative decode's net tokens/s against a greedy baseline\n"
+        "without diagnostics, and the first position where the committed sequence differs\n"
+        "from a separate single-token greedy run. The committed tokens are the target's own\n"
+        "verifier argmaxes; the chunked verify and the single-token forward round differently\n"
+        "in bf16, so bitwise identity is not guaranteed on natural text after a full accept.\n\n"
+        "Does not establish: general-task acceptance, a trained draft model, tree verification,\n"
+        "batch>1 throughput, or that the memory compression itself accelerates generation.\n"
+    )
+    return GateOutcome(
+        gate="s2",
+        status=status,
+        verdict=f"{status}: {arm_id} speedup {_fmt(speedup)}x, acceptance {_fmt(acceptance)}, match={output_match}",
+        result={
+            "status_detail": status,
+            "arm": arm_id,
+            "proposer": proposer_kind,
+            "draft_head": draft_head,
+            "partial_accept": partial_accept,
+            "prompt_tokens": len(prompt),
+            "prompt_sha256": prompt_sha,
+            "baseline_tokens_per_s": baseline_tps,
+            "speculative_tokens_per_s": speculative_tps,
+            "speedup": speedup,
+            "output_match": output_match,
+            "divergence_index": divergence_index,
+            "divergence_tokens": divergence_tokens,
+            "acceptance": acceptance,
+            "full_accept_rate": full_accept_rate,
+            "proposed_tokens": speculative.proposed_tokens,
+            "accepted_tokens": speculative.accepted_tokens,
+            "full_accepts": speculative.full_accepts,
+            "partial_accepts": speculative.partial_accepts,
+            "verify_calls": speculative.verify_calls,
+            "fallback_calls": speculative.fallback_calls,
+            **footprint,
             "checks": [check.as_dict() for check in checks],
         },
         report=report,

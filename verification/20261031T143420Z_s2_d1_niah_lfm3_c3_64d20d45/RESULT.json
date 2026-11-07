@@ -1,0 +1,54 @@
+{
+  "acceptance": 0.08163265306122448,
+  "accepted_tokens": 4,
+  "arm": "C3_memory",
+  "baseline_tokens_per_s": 17.532468917475168,
+  "cache_bytes": 49039360,
+  "checks": [
+    {
+      "detail": "32 tokens",
+      "name": "output_matches_greedy",
+      "passed": false
+    },
+    {
+      "detail": 49,
+      "name": "draft_proposed",
+      "passed": true
+    },
+    {
+      "detail": {
+        "acceptance": 0.08163265306122448,
+        "target": 0.5
+      },
+      "name": "acceptance_target",
+      "passed": false
+    },
+    {
+      "detail": {
+        "speedup": 0.7698114393320515,
+        "target": 1.3
+      },
+      "name": "net_speedup_target",
+      "passed": false
+    }
+  ],
+  "fallback_calls": 12,
+  "full_accept_rate": 0.07692307692307693,
+  "full_accepts": 1,
+  "kv_bytes_per_token": 11879,
+  "memory_bytes": 12632064,
+  "output_match": false,
+  "partial_accept": false,
+  "partial_accepts": 0,
+  "prompt_sha256": "bf407000ad9cda919fe7c108d10b2d767d3c76eb05936217d4d8a05fb0563c8b",
+  "prompt_tokens": 4128,
+  "proposed_tokens": 49,
+  "proposer": "prompt",
+  "schema_version": 1,
+  "speculative_tokens_per_s": 13.496695132406014,
+  "speedup": 0.7698114393320515,
+  "status": "FAIL",
+  "status_detail": "FAIL",
+  "verdict": "FAIL: C3_memory speedup 0.7698x, acceptance 0.0816, match=False",
+  "verify_calls": 13
+}

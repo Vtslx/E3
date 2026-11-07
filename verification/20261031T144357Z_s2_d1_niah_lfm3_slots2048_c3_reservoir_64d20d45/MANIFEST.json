@@ -1,0 +1,171 @@
+{
+  "argv": [
+    ".venv/bin/sprm",
+    "verify",
+    "s2",
+    "--config",
+    "configs/experiments/d1_niah.yaml",
+    "--arm",
+    "C3_memory",
+    "--slots",
+    "2048",
+    "--reservoir",
+    "--max-new-tokens",
+    "32"
+  ],
+  "artifacts": {
+    "CLAIMS.md": {
+      "sha256": "20b4daad1a30b1d3e35ffda63fcd004bb3c61a6c1fefc8f69c85b8a998cdab20",
+      "size": 431
+    },
+    "REPORT.md": {
+      "sha256": "be7ea0bcd7f720f9d856ba6ee98fe87e0403d922ec982d39fe126d5237c02022",
+      "size": 910
+    },
+    "RESULT.json": {
+      "sha256": "95de72b8374616b7bd155f551703a7238925eb3eb85d0f3ca879dff7c254fd27",
+      "size": 1378
+    },
+    "artifacts/checks.json": {
+      "sha256": "cbc312ff08b1226efd89d1ac890890ed76778a057f2b1c534e9aba7eb53931ed",
+      "size": 460
+    },
+    "artifacts/summary.json": {
+      "sha256": "e9a8e7042adec1c4818e1fa3f72a9dd588555a025f4605bdc9f31801629eafe5",
+      "size": 1524
+    },
+    "config.yaml": {
+      "sha256": "64d20d4570e5bc866fd385bfcbad526c0f8d9541d1125e42beb5af446856f268",
+      "size": 2419
+    },
+    "logs/events.jsonl": {
+      "sha256": "e8b62fcf09a27e6b973d7e6863151035431f5c2537d87515514e6f0dce97b9ec",
+      "size": 926
+    },
+    "logs/stdout.log": {
+      "sha256": "e8b62fcf09a27e6b973d7e6863151035431f5c2537d87515514e6f0dce97b9ec",
+      "size": 926
+    }
+  },
+  "config": {
+    "sha256": "64d20d4570e5bc866fd385bfcbad526c0f8d9541d1125e42beb5af446856f268",
+    "snapshot": "config.yaml"
+  },
+  "duration_s": 19.649,
+  "environment": {
+    "cpu_count": 10,
+    "cuda_available": false,
+    "machine": "arm64",
+    "mps_available": true,
+    "mps_built": true,
+    "mps_recommended_max_memory_bytes": 12713115648,
+    "platform": "macOS-27.2-arm64-arm-64bit-Mach-O",
+    "processor": "arm",
+    "python": "3.14.6",
+    "python_executable": "/Volumes/Net/E3/.venv/bin/python",
+    "ram_total_bytes": 17179869184,
+    "timestamp_utc": "2026-10-31T14:44:16Z",
+    "torch": "2.15.0",
+    "transformers": "5.22.0"
+  },
+  "extra": {
+    "arm": "C3_memory",
+    "gamma": 4,
+    "max_new_tokens": 32,
+    "ngram": 3,
+    "partial": false,
+    "prompt_tokens": 4096,
+    "proposer": "True"
+  },
+  "finished_at": "2026-10-31T14:44:16Z",
+  "gate": "s2",
+  "model": {
+    "conv_layers": [
+      0,
+      1,
+      3,
+      5,
+      7,
+      9,
+      11,
+      13,
+      15,
+      17,
+      19,
+      21,
+      23
+    ],
+    "device": "mps",
+    "dtype": "bfloat16",
+    "file_hashes": {
+      "configuration_lfm3.py": "176cced35657aedfea7d7002221360582d1c05fcaca882c21508bc3a73b282e5",
+      "lfm3_conv.py": "80d4a985382a22774212759248a6b4c737bfbf9c2a47b3dd7f797dda748e4bb4",
+      "model.safetensors": "135922caef64e81e52af88ede8b7c3ddaa9d6da220a9737fb3065275dbfb4330",
+      "modeling_lfm3.py": "e8cd5254ea99ce6bd731b57b10908c2e8b5010ce8315341f895a38484885eeab",
+      "tokenizer.json": "7e226e34bface23ccf6e495d157bf77186c1c30a7659880e1a8994db528c3701"
+    },
+    "global_layers": [
+      2,
+      6,
+      10,
+      14,
+      18,
+      22
+    ],
+    "head_dim": 128,
+    "hidden_size": 2048,
+    "kind": "lfm3",
+    "layer_kinds": [
+      "conv",
+      "conv",
+      "full_attention",
+      "conv",
+      "sliding_attention",
+      "conv",
+      "full_attention",
+      "conv",
+      "sliding_attention",
+      "conv",
+      "full_attention",
+      "conv",
+      "sliding_attention",
+      "conv",
+      "full_attention",
+      "conv",
+      "sliding_attention",
+      "conv",
+      "full_attention",
+      "conv",
+      "sliding_attention",
+      "conv",
+      "full_attention",
+      "conv"
+    ],
+    "max_position_embeddings": 262144,
+    "model_path": "/Users/yikewang/Model/LFM3/LFM3-1.7B",
+    "model_sha256": null,
+    "num_attention_heads": 16,
+    "num_kv_heads": 4,
+    "num_layers": 24,
+    "remote_code_sha256": null,
+    "sliding_layers": [
+      4,
+      8,
+      12,
+      16,
+      20
+    ],
+    "sliding_window": 256,
+    "tokenizer_sha256": null,
+    "vocab_size": 128000
+  },
+  "run_id": "20261031T144357Z_s2_d1_niah_lfm3_slots2048_c3_reservoir_64d20d45",
+  "schema_version": 1,
+  "source_tree": {
+    "files": 32,
+    "src_sprm_sha256": "1d5d170eb9b44cdd30628baade6c90da475ad722f6fbd275d9dc62c0ceff0e3a"
+  },
+  "started_at": "2026-10-31T14:43:57Z",
+  "status": "FAIL",
+  "verdict": "FAIL: C3_memory speedup 0.7819x, acceptance 0.0303, match=True"
+}

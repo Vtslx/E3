@@ -2,7 +2,9 @@
 
 State is two matrices ``M_k, M_v in R^{B x d}``. A read is
 ``a = softmax(τ · k̂ M_kᵀ); v̂ = a M_v``. A write moves each slot towards the residual
-``v - M_v a`` with gain ``η g``. Everything is fp32 and gradient-free.
+``v - M_v a`` with gain ``η g``. The arithmetic is fp32 and gradient-free; storage can be
+bf16 (``memory_dtype``) to halve the resident memory footprint, in which case every read
+and write upcasts to fp32 and rounds back on store.
 
 Design corrections relative to DESIGN.md v0.2, recorded in docs/ADR-001 and ADR-002:
 
@@ -39,6 +41,9 @@ class AssociativeMemoryConfig:
     key_l2_normalize: bool
     kmeans_iters: int = 8
     refine_passes: int = 2
+    key_singular_floor: float = 2.0e-6
+    stability_buffers: bool = False
+    memory_dtype: str = "float32"
     anchor_interval: int = 64
     anchor_blend: float = 0.01
     replay_blocks: int = 2
@@ -56,14 +61,23 @@ class AssociativeMemory:
             raise MemoryInvariantError("num_slots/key_dim/value_dim must be positive")
         if config.read_temperature <= 0:
             raise MemoryInvariantError("read_temperature must be positive")
+        if config.memory_dtype not in {"float32", "bfloat16"}:
+            raise MemoryInvariantError(
+                f"memory_dtype must be float32 or bfloat16, got {config.memory_dtype!r}"
+            )
         self.device = torch.device(device)
+        self._storage_dtype = (
+            torch.bfloat16 if config.memory_dtype == "bfloat16" else torch.float32
+        )
         generator = torch.Generator(device="cpu").manual_seed(seed)
         keys = torch.randn(config.num_slots, config.key_dim, generator=generator, dtype=torch.float32)
         keys = keys / keys.norm(dim=-1, keepdim=True).clamp_min(config.eps)
-        self.M_k = keys.to(self.device)
-        self.M_v = torch.zeros(config.num_slots, config.value_dim, device=self.device, dtype=torch.float32)
-        self.M_k_ref = self.M_k.clone()
-        self.M_v_ref = self.M_v.clone()
+        self.M_k = keys.to(self.device, dtype=self._storage_dtype)
+        self.M_v = torch.zeros(
+            config.num_slots, config.value_dim, device=self.device, dtype=self._storage_dtype
+        )
+        self.M_k_ref = self.M_k.clone() if config.stability_buffers else None
+        self.M_v_ref = self.M_v.clone() if config.stability_buffers else None
         self._replay: list[tuple[torch.Tensor, torch.Tensor, torch.Tensor]] = []
         self.slot_positions = torch.full((config.num_slots,), -1, device=self.device, dtype=torch.long)
         self.slot_block_ids = torch.full((config.num_slots,), -1, device=self.device, dtype=torch.long)
@@ -95,7 +109,7 @@ class AssociativeMemory:
         return normalized
 
     def _softmax_weights(self, keys: torch.Tensor) -> torch.Tensor:
-        logits = self.config.read_temperature * (keys @ self.M_k.transpose(0, 1))
+        logits = self.config.read_temperature * (keys @ self.M_k.float().transpose(0, 1))
         return torch.softmax(logits.float(), dim=-1)
 
     def _invalidate(self) -> None:
@@ -110,7 +124,7 @@ class AssociativeMemory:
             )
         k = self._normalize(keys.float())
         a = self._softmax_weights(k)
-        return a @ self.M_v, a
+        return a @ self.M_v.float(), a
 
     def recon_error(self, keys: torch.Tensor, values: torch.Tensor) -> float:
         if keys.shape[-1] != self.config.key_dim or values.shape[-1] != self.config.value_dim:
@@ -164,8 +178,10 @@ class AssociativeMemory:
             raise MemoryInvariantError("empty write")
         k = self._normalize(keys.float())
         v = values.float()
-        mk = self.M_k[slot_slice]
-        mv = self.M_v[slot_slice]
+        mk_storage = self.M_k[slot_slice]
+        mv_storage = self.M_v[slot_slice]
+        mk = mk_storage.float()
+        mv = mv_storage.float()
         logits = self.config.read_temperature * (k @ mk.transpose(0, 1))
         a = torch.softmax(logits, dim=-1)
         v_hat = a @ mv
@@ -189,10 +205,11 @@ class AssociativeMemory:
             self._stats.trust_scaled_count += 1
 
         with torch.no_grad():
-            mv.add_(delta_v)
-            mk.add_(delta_k)
+            new_mk = mk + delta_k
             if self.config.key_l2_normalize:
-                mk.copy_(self._normalize(mk))
+                new_mk = self._normalize(new_mk)
+            mk_storage.copy_(new_mk.to(mk_storage.dtype))
+            mv_storage.copy_((mv + delta_v).to(mv_storage.dtype))
         self._invalidate()
         if count:
             self._stats.writes += 1
@@ -280,12 +297,41 @@ class AssociativeMemory:
         self._record_replay(k, v, positions)
         return report
 
+    def regularize_keys(self, floor_ratio: float | None = None) -> float:
+        """Clamp the key spectrum to a relative floor and renormalize rows.
+
+        Repetitive filler makes many slot centers nearly collinear, so ``smin`` collapses
+        and the condition number goes to ``inf``. The floor lifts only the null directions;
+        the dominant retrieval directions are unchanged. This is a memory-only stability
+        mechanism, independent of W1.
+        """
+        ratio = self.config.key_singular_floor if floor_ratio is None else floor_ratio
+        if ratio <= 0.0:
+            return self.condition()
+        matrix = self.M_k.detach().float().cpu()
+        try:
+            left, singular, right = torch.linalg.svd(matrix, full_matrices=False)
+        except RuntimeError:
+            return self.condition()
+        if singular.numel() == 0:
+            return self.condition()
+        floor = max(float(singular[0].item()) * ratio, self.config.eps)
+        clamped = singular.clamp_min(floor)
+        rebuilt = (left * clamped.unsqueeze(0)) @ right
+        rebuilt = rebuilt / rebuilt.norm(dim=-1, keepdim=True).clamp_min(self.config.eps)
+        with torch.no_grad():
+            self.M_k.copy_(rebuilt.to(device=self.M_k.device, dtype=self.M_k.dtype))
+        self._invalidate()
+        return self.condition()
+
     def _maybe_anchor(self) -> None:
         """Pull the memory toward a frozen reference; refresh the reference every N writes.
 
         The first write establishes the reference, so the initial random keys / zero values
         are never used as an anchor.
         """
+        if self.M_k_ref is None or self.M_v_ref is None:
+            return
         writes = self._stats.writes
         interval = max(1, self.config.anchor_interval)
         if writes <= 1 or writes % interval == 0:
@@ -301,12 +347,14 @@ class AssociativeMemory:
             self.M_k.mul_(1.0 - blend).add_(self.M_k_ref, alpha=blend)
             self.M_v.mul_(1.0 - blend).add_(self.M_v_ref, alpha=blend)
             if self.config.key_l2_normalize:
-                self.M_k.copy_(self._normalize(self.M_k))
+                self.M_k.copy_(self._normalize(self.M_k.float()).to(self.M_k.dtype))
         self._invalidate()
 
     def _record_replay(
         self, keys: torch.Tensor, values: torch.Tensor, positions: torch.Tensor
     ) -> None:
+        if not self.config.stability_buffers:
+            return
         limit = max(0, self.config.replay_blocks)
         if limit == 0:
             return
@@ -324,6 +372,8 @@ class AssociativeMemory:
         )
 
     def _maybe_replay(self) -> None:
+        if not self.config.stability_buffers:
+            return
         interval = max(1, self.config.replay_interval)
         if not self._replay or self._stats.writes % interval != 0:
             return
@@ -367,8 +417,8 @@ class AssociativeMemory:
             + self.M_v.numel() * self.M_v.element_size()
             + self.slot_positions.numel() * self.slot_positions.element_size()
             + self.slot_block_ids.numel() * self.slot_block_ids.element_size()
-            + self.M_k_ref.numel() * self.M_k_ref.element_size()
-            + self.M_v_ref.numel() * self.M_v_ref.element_size()
+            + (0 if self.M_k_ref is None else self.M_k_ref.numel() * self.M_k_ref.element_size())
+            + (0 if self.M_v_ref is None else self.M_v_ref.numel() * self.M_v_ref.element_size())
             + sum(
                 int(tensor.numel() * tensor.element_size())
                 for block in self._replay
@@ -393,8 +443,8 @@ class AssociativeMemory:
         other.M_v = self.M_v.clone()
         other.slot_positions = self.slot_positions.clone()
         other.slot_block_ids = self.slot_block_ids.clone()
-        other.M_k_ref = self.M_k_ref.clone()
-        other.M_v_ref = self.M_v_ref.clone()
+        other.M_k_ref = None if self.M_k_ref is None else self.M_k_ref.clone()
+        other.M_v_ref = None if self.M_v_ref is None else self.M_v_ref.clone()
         other._replay = [
             (keys.clone(), values.clone(), positions.clone())
             for keys, values, positions in self._replay

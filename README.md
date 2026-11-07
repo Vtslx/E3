@@ -6,7 +6,7 @@ gate lives in [`docs/VERIFICATION_PROTOCOL.md`](docs/VERIFICATION_PROTOCOL.md).
 
 | Form | Description | Status |
 |------|-------------|--------|
-| **A** | Per-layer global associative memory, delta-rule writes, exact Tier-1 sink+window | implemented; V0/V1/V2 PASS; D5 2048 PASS; D5 512 FAIL; S1 PASS; D1 512/1024/2048 done; W1 cut |
+| **A** | Per-layer global associative memory, delta-rule writes, exact Tier-1 sink+window | implemented; V0/V1/V2 PASS; S1 PASS; D1 512/1024/2048 done; W1 cut; C3 condition bounded but G0 fails on memory shrinkage (accuracy-only). Phase 1: full 2048 bf16 far **70.8%** at resident **5.05x** (fp32 buffers-off screen 3.85x). Phase 2: natural-text acceptance 0.39 exact / 0.03 C3; speed targets missed |
 | **N** | Compressed prefix of soft tokens, frozen main model | contract + budget planner only; not verified |
 
 The verification model is the local `LFM3-1.7B` checkpoint at
@@ -28,6 +28,22 @@ and 16 GB unified memory.
 | D1 | `20261030T130237Z_d1_d1_niah_lfm3_slots512_b165bff0` | **FAIL** | memory far +1.39pp, p=0.50; writeback 0/0; M2 stop at 512 |
 | D1 | `20261030T175745Z_d1_d1_niah_lfm3_slots2048_b165bff0` | **FAIL** | memory PASS (+43.06pp far, p=3.9e-7); writeback FAIL (0.0, p=0.75) |
 | D1 | `20261031T052302Z_d1_d1_niah_lfm3_slots1024_b165bff0` | **FAIL** | memory PASS (+13.89pp far, p=0.021); writeback FAIL (0.0) |
+| D5 | `20261031T120925Z_d5_d1_niah_lfm3_slots2048_c3_c32e32d2` | **FAIL** | C3: condition 501,691 pass; memory shrinkage 0.956 fail |
+| D5 | `20261031T124832Z_d5_d1_niah_lfm3_slots1024_c3_c32e32d2` | **FAIL** | C3: condition 501,935 pass; memory shrinkage 0.958 fail |
+| D5 | `20261031T125249Z_d5_d1_niah_lfm3_slots2048_c3_64d20d45` | **FAIL** | C3 with W1 buffers off: same condition/shrinkage |
+| D1 | `20261031T125403Z_d1_d1_niah_lfm3_slots2048_reduced_64d20d45` | **FAIL** (screen) | far C3 8/9 vs C1 3/9; resident **3.85x**; memory 48.2 MiB |
+| D1 | `20261031T133823Z_d1_d1_niah_lfm3_slots1024_reduced_64d20d45` | **FAIL** (screen) | far C3 5/9 vs C1 3/9; resident **6.00x**; memory 24.1 MiB |
+| D1 | `20261031T144448Z_d1_d1_niah_lfm3_slots2048_reduced_3efc1c20` | **FAIL** (screen) | bf16 core: far C3 8/9 vs C1 3/9; resident **5.05x**; memory 24.2 MiB |
+| S2 | `20261031T143340Z_s2_d1_niah_lfm3_c0_64d20d45` | **FAIL** | C0 natural: acceptance 0.387, 1.128x, output match |
+| S2 | `20261031T143420Z_s2_d1_niah_lfm3_c3_64d20d45` | **FAIL** | C3 512 natural: acceptance 0.082, 0.770x, diverges at 26 |
+| S2 | `20261031T144154Z_s2_d1_niah_lfm3_slots2048_c3_64d20d45` | **FAIL** | C3 2048 natural: acceptance 0.030, 0.778x, output match |
+| S2 | `20261031T144316Z_s2_d1_niah_lfm3_slots2048_c3_partial_64d20d45` | **FAIL** | C3 2048 partial: acceptance 0.294, 1.060x, output match |
+| S2 | `20261031T144357Z_s2_d1_niah_lfm3_slots2048_c3_reservoir_64d20d45` | **FAIL** | C3 2048 reservoir: acceptance 0.030, 0.782x, output match |
+| S2 | `20261031T144240Z_s2_d1_niah_lfm3_c0_reservoir_64d20d45` | **FAIL** | C0 reservoir: acceptance 0.387, 1.063x, output match |
+| D1 | `20261031T153124Z_d1_d1_niah_lfm3_slots2048_3efc1c20` | **FAIL** (writeback only) | **full 2048 bf16**: far C3 **70.83%** vs C1 26.39% (+44.4pp, 3/3, p=2.2e-7); resident **5.05x**; memory 24.2 MiB |
+| D1 | `20261031T211343Z_d1_d1_niah_lfm3_slots4096_reduced_3efc1c20` | **FAIL** (screen) | 4096 slots: far 8/9, resident 3.10x (no gain) |
+| D1 | `20261031T215913Z_d1_d1_niah_lfm3_slots2048_reduced_57c7da0c` | **FAIL** (screen) | query-read row: far 8/9, resident 5.05x (no gain) |
+| S2 | `20261031T211305Z_s2_d1_niah_lfm3_c0_draft_3efc1c20` | **FAIL** | low-rank draft heads: 0/122 accepted, 0.369x |
 
 The D1 gate now reports **memory effect (`C3 - C1`)** and **writeback effect
 (`C4 - C3`)** separately; `C4 - C1` is a combined diagnostic and never gates. The previous
@@ -62,11 +78,19 @@ compression is only 2.28x at the 2048 working point.
 
 Measured at 32k (`tools/frontier.py`, `docs/frontier.svg`):
 
-| slots | far C1 | far C3 | resident | no W1 buffers | bf16 core | logical | global attn |
-|-------|--------|--------|----------|---------------|-----------|---------|-------------|
-| 512 | 26.4% | 27.8% | 4.84x | 8.33x | 9.56x | 11.19x | 12.19x |
-| 1024 | 26.4% | 40.3% | 3.52x | 6.00x | 7.38x | 9.53x | 10.24x |
-| 2048 | 26.4% | 69.4% | **2.28x** | 3.85x | 5.06x | 7.36x | 7.76x |
+| slots | dtype / buffers | far C1 | far C3 | resident | C3 MiB |
+|-------|-----------------|--------|--------|----------|--------|
+| 512 (full) | fp32, on | 26.4% | 27.8% | 4.84x | 117.6 |
+| 1024 (full) | fp32, on | 26.4% | 40.3% | 3.52x | 58.8 |
+| 2048 (full) | fp32, on | 26.4% | 69.4% | 2.28x | 117.6 |
+| 2048 (reduced) | fp32, off | 33.3% | 88.9% | **3.85x** | 48.2 |
+| 1024 (reduced) | fp32, off | 33.3% | 55.6% | **6.00x** | 24.1 |
+| 2048 (reduced) | bf16, off | 33.3% | 88.9% | **5.05x** | 24.2 |
+| 2048 (full) | bf16, off | 26.4% | **70.8%** | **5.05x** | 24.2 |
+
+The reduced rows use 9 far samples (1 per cell), so the accuracies carry sampling error; their
+resident numbers are exact for the configured memory. The full 512/1024/2048 rows are the
+original 72-far-sample runs with the W1 buffers allocated.
 
 The measured frontier is the resident line: 512 buys 4.84x but stays at chance (27.8%);
 1024 gives 3.52x and 40.3%; 2048 gives 69.4% far accuracy at **2.28x resident**. The 8x
@@ -76,6 +100,59 @@ memory and a direct associative read (no duplicated slot cache) are the remainin
 engineering steps. Do not claim 8x at the measured 2048 point. The 8x-at-512 point is 27.8%
 far: near chance. The frontier is monotone in the wrong direction for the design's
 8x-at-mached-quality claim.
+
+## Phase 0 result: C3 stability
+
+Key regularization (SVD floor `2e-6`) fixes the `inf` condition: **501,691 (2048)** and
+**501,935 (1024)**, both below `1e6`. But the full-window memory shrinkage is **0.956
+(2048)** and **0.958 (1024)**, below 1: the static C3 memory does not shrink the window
+error over a 192-token decode. **G0 fails on shrinkage; A is accuracy-only — do not claim
+C3 stability.** The W1-only anchor/replay buffers were dead weight for C3: turning them off
+leaves the C3 D5 numbers unchanged and drops ~67 MiB at 2048. A memory-only adapt mechanism
+(periodic write from the exact Tier-1 window) is a separate experiment.
+
+## Phase 1 result: resident compression
+
+The W1-only anchor/replay buffers were dead weight for C3. With `stability_buffers=false`
+the C3 D5 condition/shrinkage are unchanged and the 2048 memory drops by ~67 MiB. A reduced
+2048 D1 then measures **far 8/9 vs 3/9, resident 3.85x**; a reduced 1024 D1 measures
+**5/9 vs 3/9, resident 6.00x**. Both Phase 1 gates (2048 >= 65%/3.8x, 1024 >= 35%/6x) are
+met by the fp32 buffers-off build.
+
+The bf16 memory core (`memory_dtype=bfloat16`; fp32 reads/writes, bf16 storage) halves the
+core and moves 2048 to **5.05x** (24.2 MiB). The full 2048 confirmation: far C3 **70.83%**
+vs C1 26.39% (+44.4pp, 3/3 kinds, p=2.2e-7), resident **5.05x**, condition max 506,933.
+Direct associative read (removing the duplicated slot KV) would reach ~7.36x; it is deferred
+because the resident targets are already met (ADR-010).
+
+## Phase 2 result: speed half on natural text
+
+S2 runs the prompt-lookup draft on a 4096-token natural-text prompt, exact KV and the C3
+arm. Acceptance and net tokens/s:
+
+| arm | acceptance | net tokens/s | output |
+|-----|------------|--------------|--------|
+| C0 exact | 0.387 | 1.128x | match |
+| C3 2048 | 0.030 | 0.778x | match |
+| C3 2048 + partial commit | **0.294** | 1.060x | match |
+| C3 2048 + reservoir draft | 0.030 | 0.782x | match |
+
+The Phase 2 targets (acceptance >= 0.5, net >= 1.3x) are **missed**. Prompt lookup is a
+repetition detector: the C3 memory's continuation rarely follows the literal prompt n-grams.
+Prefix commit recovers acceptance but the conv-state refeed costs a forward, so net speed
+stays near 1.06x. The natural-text speed half needs the trained draft head of Phase 3, not a
+stronger n-gram proposer.
+
+A caveat: on natural text the chunked verify can round differently from single-token greedy
+in bf16; the C3 512 run diverged at token 26. The rollback after a rejection was verified to
+be bit-exact; the drift comes from the accepted chunk (ADR-010).
+
+Follow-up negatives (2026-11-01): low-rank Medusa heads trained on 967k WikiText tokens give
+held-out top-1 0.271/0.126/0.063/0.059 and accept **0/122** on the docs prompt (0.37x);
+4096 slots and a question-query read row do not move the reduced far (8/9). The 2x
+natural-text target requires a trained in-domain draft with tree verification (Phase 3),
+and the conditional far gap needs a trained read/write; neither is reachable by capacity or
+an untrained read row.
 
 ## What is verified
 
@@ -95,6 +172,8 @@ far: near chance. The frontier is monotone in the wrong direction for the design
 - **D1 attribution**: memory (`C3 - C1`) and writeback (`C4 - C3`) are separate checks.
 - **S1 speed**: prompt-lookup speculative decoding with all-or-nothing commit, output
   token-identical to greedy, tokens/s measured (ADR-007).
+- **S2 speed**: natural-text and C3-arm acceptance/net tokens/s, prefix commit, reservoir
+  draft, and the first greedy-divergence position (ADR-010).
 - Stability diagnostics: reconstruction error, condition number, trust region, memory bytes,
   KV bytes per token, and the gold candidate's probability and rank.
 - D5 long-decode stability gate: condition bound and window-reconstruction shrinkage.

@@ -23,6 +23,7 @@ from sprm.backends.lfm3.backend import Lfm3Backend
 from sprm.backends.lfm3.cache import CacheController
 from sprm.config.schema import ArmConfig, ExperimentConfig
 from sprm.contracts.types import DecodeStep
+from sprm.runtime.draft_heads import DraftHeadProposer
 from sprm.runtime.form_a import (
     ExactWindow,
     MemoryBuild,
@@ -58,6 +59,65 @@ class PromptLookup:
 
 
 @dataclass
+class ReservoirLookup:
+    """Frequency-ranked n-gram draft over prompt + generated history.
+
+    Prompt-lookup takes the continuation after the *most recent* occurrence of the current
+    suffix. The reservoir collects up to ``max_occurrences`` earlier occurrences and proposes
+    the majority continuation at each step. On natural text, where one suffix has several
+    continuations, the majority is a cheaper estimate than the last one; on repetitive text
+    the two proposers coincide.
+    """
+
+    history: list[int]
+    n: int = 3
+    gamma: int = 4
+    max_occurrences: int = 64
+    proposed: int = 0
+
+    def _matches(self) -> list[int]:
+        if self.gamma < 1 or len(self.history) < self.n + 1:
+            return []
+        suffix = self.history[-self.n :]
+        matches: list[int] = []
+        for index in range(len(self.history) - self.n - 1, -1, -1):
+            if self.history[index : index + self.n] == suffix:
+                matches.append(index)
+                if len(matches) >= self.max_occurrences:
+                    break
+        return matches
+
+    def propose(self) -> list[int]:
+        positions = self._matches()
+        if not positions:
+            return []
+        proposal: list[int] = []
+        length = len(self.history)
+        for step in range(self.gamma):
+            candidates = [
+                self.history[pos + self.n + step]
+                for pos in positions
+                if pos + self.n + step < length
+            ]
+            if not candidates:
+                break
+            best = candidates[0]
+            best_count = 0
+            for token in candidates:
+                count = candidates.count(token)
+                if count > best_count:
+                    best = token
+                    best_count = count
+            proposal.append(best)
+        if proposal:
+            self.proposed += len(proposal)
+        return proposal
+
+    def update(self, tokens: list[int]) -> None:
+        self.history.extend(int(token) for token in tokens)
+
+
+@dataclass
 class SpeculativeOutcome:
     steps: list[DecodeStep]
     generated: list[int]
@@ -67,6 +127,7 @@ class SpeculativeOutcome:
     verify_calls: int
     fallback_calls: int
     elapsed_s: float = 0.0
+    partial_accepts: int = 0
     diagnostics: dict[str, float] = field(default_factory=dict)
 
 
@@ -124,9 +185,18 @@ def decode_speculative(
     exact_window: ExactWindow,
     build: MemoryBuild | None,
     eostoken_id: int | None,
-    proposer: PromptLookup,
+    proposer: PromptLookup | ReservoirLookup | DraftHeadProposer,
+    partial_accept: bool = False,
 ) -> SpeculativeOutcome:
-    """Greedy speculative decode. Output tokens are identical to greedy decoding."""
+    """Greedy speculative decode. Output tokens are identical to greedy decoding.
+
+    ``partial_accept=False`` keeps the original all-or-nothing commit. When enabled, a
+    mismatching proposal still commits its matching prefix: the KV for the whole proposal is
+    cropped, the conv state is restored from the pre-verify snapshot, and the accepted prefix
+    is re-fed as one chunk so the conv state after ``k`` tokens is rebuilt exactly. The next
+    token is then the target's argmax at the last accepted position (a free bonus), so the
+    output remains the greedy sequence.
+    """
     t0 = time.perf_counter()
     steps: list[DecodeStep] = []
     generated: list[int] = []
@@ -135,6 +205,7 @@ def decode_speculative(
     proposed_tokens = 0
     accepted_tokens = 0
     full_accepts = 0
+    partial_accepts = 0
     verify_calls = 0
     fallback_calls = 0
 
@@ -150,6 +221,7 @@ def decode_speculative(
         proposal = proposer.propose()[:remaining]
         if proposal:
             verify_calls += 1
+            proposed_tokens += len(proposal)
             snapshot = cache.snapshot_conv()
             cache.activate_sliding_past()
             verify = backend.decode_many(cache, proposal, position)
@@ -160,6 +232,49 @@ def decode_speculative(
                 if target != proposal[index]:
                     break
                 matches += 1
+            if partial_accept and 0 < matches < len(proposal):
+                # Commit the matching prefix. The conv state after k tokens is rebuilt by
+                # re-feeding the prefix as one chunk from the pre-verify snapshot.
+                cache.crop_tail(len(proposal))
+                cache.restore_conv(snapshot)
+                cache.finish_speculation()
+                accepted = proposal[:matches]
+                refeed = backend.decode_many(cache, accepted, position)
+                committed = 0
+                for index, token in enumerate(accepted):
+                    if not emit(token, logits_sequence[index]):
+                        break
+                    cache_index = -(matches - index)
+                    if build is not None:
+                        _record_token(
+                            backend,
+                            cache,
+                            experiment,
+                            exact_window,
+                            build,
+                            arm,
+                            index=cache_index,
+                            position=position + index,
+                        )
+                    committed += 1
+                accepted_tokens += committed
+                partial_accepts += 1
+                position += committed
+                if committed < len(accepted) or len(generated) >= max_new_tokens:
+                    break
+                if eostoken_id is not None and generated and generated[-1] == eostoken_id:
+                    break
+                bonus = int(torch.argmax(refeed[-1]).item())
+                if not emit(bonus, refeed[-1]):
+                    break
+                current = backend.decode(cache, bonus, position)
+                if build is not None:
+                    _record_token(
+                        backend, cache, experiment, exact_window, build, arm, index=-1, position=position
+                    )
+                position += 1
+                continue
+
             if matches != len(proposal):
                 # Reject the whole batch: crop KV, restore conv state, resume normal decoding.
                 cache.crop_tail(len(proposal))
@@ -195,7 +310,6 @@ def decode_speculative(
                         position=position + index,
                     )
             accepted_tokens += len(proposal)
-            proposed_tokens += len(proposal)
             full_accepts += 1
             position += len(proposal)
             if len(generated) >= max_new_tokens:
@@ -233,6 +347,7 @@ def decode_speculative(
         full_accepts=full_accepts,
         verify_calls=verify_calls,
         fallback_calls=fallback_calls,
+        partial_accepts=partial_accepts,
         elapsed_s=time.perf_counter() - t0,
         diagnostics={
             "acceptance_rate": (
@@ -241,6 +356,7 @@ def decode_speculative(
             "mean_accepted": (
                 accepted_tokens / full_accepts if full_accepts else float("nan")
             ),
+            "partial_accepts": float(partial_accepts),
             "tokens": float(len(generated)),
         },
     )

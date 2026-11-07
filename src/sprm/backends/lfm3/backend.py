@@ -94,8 +94,16 @@ class Lfm3Backend:
         )
         self.stats = ForwardStats()
         self.query_probe: QueryProbe | None = None
+        self.last_hidden: torch.Tensor | None = None
+        self._hidden_handle = self.model.lm_head.register_forward_pre_hook(self._capture_hidden)
         self._closed = False
         self._verify_native_path()
+
+    def _capture_hidden(self, module: Any, inputs: Any) -> None:
+        """Keep the last position's pre-LM-head hidden state for draft heads."""
+        hidden = inputs[0]
+        if hidden.ndim == 3 and hidden.shape[1] > 0:
+            self.last_hidden = hidden[:, -1, :].detach().float()
 
     # ------------------------------------------------------------------ setup
     def _verify_native_path(self) -> None:
@@ -296,6 +304,7 @@ class Lfm3Backend:
         if self._closed:
             return
         self._closed = True
+        self._hidden_handle.remove()
         del self.model
         if torch.backends.mps.is_available():
             torch.mps.empty_cache()

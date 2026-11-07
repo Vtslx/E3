@@ -110,3 +110,35 @@ def test_write_slots_rejects_slot_overflow() -> None:
 def test_condition_is_finite_for_well_conditioned_keys() -> None:
     memory = _memory()
     assert math.isfinite(memory.condition())
+
+
+def test_bf16_storage_halves_bytes_and_keeps_reads_finite() -> None:
+    from dataclasses import replace
+
+    baseline = _memory()
+    memory = AssociativeMemory(
+        replace(baseline.config, memory_dtype="bfloat16"), device="cpu", seed=7
+    )
+    assert memory.M_k.dtype == torch.bfloat16
+    assert memory.M_v.dtype == torch.bfloat16
+    matrix_bytes = memory.M_k.numel() * memory.M_k.element_size() + memory.M_v.numel() * memory.M_v.element_size()
+    fp32_matrix_bytes = baseline.M_k.numel() * baseline.M_k.element_size() + baseline.M_v.numel() * baseline.M_v.element_size()
+    assert matrix_bytes * 2 == fp32_matrix_bytes
+    keys, values = _clustered()
+    baseline.write_slots(
+        keys, values, slot_start=0, slot_count=16, positions=torch.arange(32), block_id=0
+    )
+    memory.write_slots(
+        keys, values, slot_start=0, slot_count=16, positions=torch.arange(32), block_id=0
+    )
+    fp32_error = baseline.recon_error(keys, values)
+    bf16_error = memory.recon_error(keys, values)
+    assert math.isfinite(bf16_error)
+    assert bf16_error < 0.5
+    assert abs(bf16_error - fp32_error) < 0.05
+    read, weights = memory.read(keys)
+    assert read.dtype == torch.float32
+    assert torch.isfinite(read).all()
+    assert torch.allclose(weights.sum(dim=-1), torch.ones(keys.shape[0]), atol=1.0e-4)
+    memory.regularize_keys()
+    assert math.isfinite(memory.condition())

@@ -49,3 +49,18 @@ acceptance estimate.
   reconstruction would be faster but is not implemented.
 - The live memory arm's W1 is processed after the accepted batch; its one-step lag is
   extended to `gamma` for the tokens inside the batch.
+
+## Update (2026-10-31): partial commit, reservoir draft, and acceptance accounting
+
+- `proposed_tokens` now counts **every** proposed token, including proposals that are
+  rejected. The original S1 run reported 26/26 because it counted only full accepts; that
+  number is a full-accept count, not a token acceptance rate.
+- `partial_accept=True` commits the matching prefix instead of rejecting the whole proposal.
+  The unaccepted rows are cropped, the pre-verify conv snapshot is restored, and the accepted
+  prefix is re-fed as one chunk so the conv state after `k` tokens is rebuilt exactly. The
+  next token is the target's argmax at the last accepted position, so the output stays the
+  greedy sequence. This is the conv-state reconstruction the original ADR said was missing.
+- `ReservoirLookup` generalizes the draft: collect up to 64 earlier occurrences of the suffix
+  and propose the majority continuation at each step. It coincides with prompt lookup on
+  repetitive text and is measured on natural text in S2.
+- S2 (natural text, C3 arm) is the operating-point gate; see ADR-010.

@@ -24,6 +24,7 @@ from sprm.eval.gates import (
     gate_d1,
     gate_d5,
     gate_s1,
+    gate_s2,
     gate_v0,
     gate_v1,
     gate_v2,
@@ -75,7 +76,7 @@ def _parser() -> argparse.ArgumentParser:
 
     verify = sub.add_parser("verify", help="run a verification gate")
     verify_sub = verify.add_subparsers(dest="gate", required=True)
-    for gate in ("v0", "v1", "v2", "d1", "d5", "s1"):
+    for gate in ("v0", "v1", "v2", "d1", "d5", "s1", "s2"):
         gate_parser = verify_sub.add_parser(gate)
         gate_parser.add_argument("--config", required=True)
         gate_parser.add_argument("--quiet", action="store_true")
@@ -91,11 +92,25 @@ def _parser() -> argparse.ArgumentParser:
             gate_parser.add_argument("--arms", default=None, help="comma separated arm ids")
             gate_parser.add_argument("--max-new-tokens", type=int, default=None)
         if gate == "d5":
-            gate_parser.add_argument("--slots", type=int, default=None, help="override tier2.num_slots (512/2048)")
+            gate_parser.add_argument("--slots", type=int, default=None, help="override tier2.num_slots")
+            gate_parser.add_argument("--arm", default="C4_memory_w1", help="memory arm for D5")
         if gate == "s1":
             gate_parser.add_argument("--max-new-tokens", type=int, default=32)
             gate_parser.add_argument("--gamma", type=int, default=4)
             gate_parser.add_argument("--ngram", type=int, default=3)
+        if gate == "s2":
+            gate_parser.add_argument("--arm", default="C3_memory", help="arm to speculate on")
+            gate_parser.add_argument("--slots", type=int, default=None, help="override tier2.num_slots")
+            gate_parser.add_argument("--max-new-tokens", type=int, default=32)
+            gate_parser.add_argument("--gamma", type=int, default=4)
+            gate_parser.add_argument("--ngram", type=int, default=3)
+            gate_parser.add_argument("--prompt", default=None, help="path to a natural-text prompt")
+            gate_parser.add_argument("--prompt-tokens", type=int, default=4096)
+            gate_parser.add_argument("--partial", action="store_true", help="commit a matching prefix")
+            gate_parser.add_argument(
+                "--reservoir", action="store_true", help="use the frequency-ranked reservoir proposer"
+            )
+            gate_parser.add_argument("--draft-head", default=None, help="trained draft-head weights")
         gate_parser.set_defaults(func=_cmd_verify)
 
     archive = sub.add_parser("archive", help="inspect the verification archive")
@@ -112,6 +127,37 @@ def _parser() -> argparse.ArgumentParser:
 # ---------------------------------------------------------------------- helpers
 def _load(path: str) -> ExperimentConfig:
     return load_experiment(path)
+
+
+_NATURAL_DOCS = (
+    "docs/FORM_A.md",
+    "docs/VERIFICATION_PROTOCOL.md",
+    "README.md",
+    "docs/ADR-005-future-query-allocation.md",
+    "docs/ADR-006-stability-anchors-replay-eta.md",
+    "docs/ADR-007-prompt-lookup-speculative.md",
+    "docs/ADR-008-w1-cut.md",
+    "docs/ADR-009-c3-stability-regularization.md",
+)
+
+
+def _natural_prompt(path: str | None) -> str:
+    """A deterministic, non-repetitive prose prompt for S2.
+
+    The default concatenates the design and verification documents in the repository, so the
+    prompt is versioned with the source tree. ``--prompt`` overrides it with a file.
+    """
+    if path is not None:
+        return Path(path).read_text(encoding="utf-8")
+    root = Path(__file__).resolve().parents[2]
+    parts = [
+        (root / name).read_text(encoding="utf-8")
+        for name in _NATURAL_DOCS
+        if (root / name).exists()
+    ]
+    if not parts:
+        raise ConfigError("no natural-text prompt found; pass --prompt")
+    return "\n\n".join(parts)
 
 
 def _backend(config: ExperimentConfig, *, quiet: bool = False) -> Lfm3Backend:
@@ -296,6 +342,17 @@ def _cmd_verify(args: argparse.Namespace) -> int:
     slug = config.name
     if slots is not None:
         slug = f"{slug}_slots{slots}"
+    arm_for_slug = str(getattr(args, "arm", "")) if gate == "d5" else ""
+    if arm_for_slug and arm_for_slug != "C4_memory_w1":
+        slug = f"{slug}_{arm_for_slug.split('_')[0].lower()}"
+    if gate == "s2":
+        slug = f"{slug}_{str(getattr(args, 'arm', 'C3_memory')).split('_')[0].lower()}"
+        if bool(getattr(args, "partial", False)):
+            slug = f"{slug}_partial"
+        if bool(getattr(args, "reservoir", False)):
+            slug = f"{slug}_reservoir"
+        if getattr(args, "draft_head", None):
+            slug = f"{slug}_draft"
     if reduced:
         slug = f"{slug}_reduced"
     archive: RunArchive | None = None
@@ -323,8 +380,12 @@ def _cmd_verify(args: argparse.Namespace) -> int:
             elif gate == "v2":
                 outcome = gate_v2(backend, config, logger, archive=archive)
             elif gate == "d5":
-                outcome = gate_d5(backend, config, logger, archive=archive)
-                outcome.extra = {"slot_budget": slots if slots is not None else config.tier2.num_slots}
+                arm_id = str(getattr(args, "arm", "C4_memory_w1"))
+                outcome = gate_d5(backend, config, logger, archive=archive, arm_id=arm_id)
+                outcome.extra = {
+                    "slot_budget": slots if slots is not None else config.tier2.num_slots,
+                    "arm": arm_id,
+                }
             elif gate == "s1":
                 outcome = gate_s1(
                     backend,
@@ -339,6 +400,34 @@ def _cmd_verify(args: argparse.Namespace) -> int:
                     "max_new_tokens": int(getattr(args, "max_new_tokens", 32)),
                     "gamma": int(getattr(args, "gamma", 4)),
                     "ngram": int(getattr(args, "ngram", 3)),
+                }
+            elif gate == "s2":
+                outcome = gate_s2(
+                    backend,
+                    config,
+                    logger,
+                    archive=archive,
+                    max_new_tokens=int(getattr(args, "max_new_tokens", 32)),
+                    gamma=int(getattr(args, "gamma", 4)),
+                    ngram=int(getattr(args, "ngram", 3)),
+                    arm_id=str(getattr(args, "arm", "C3_memory")),
+                    prompt_text=_natural_prompt(getattr(args, "prompt", None)),
+                    prompt_tokens=int(getattr(args, "prompt_tokens", 4096)),
+                    partial_accept=bool(getattr(args, "partial", False)),
+                    proposer_kind=(
+                        "reservoir" if bool(getattr(args, "reservoir", False)) else "prompt"
+                    ),
+                    draft_head=getattr(args, "draft_head", None),
+                )
+                outcome.extra = {
+                    "max_new_tokens": int(getattr(args, "max_new_tokens", 32)),
+                    "gamma": int(getattr(args, "gamma", 4)),
+                    "ngram": int(getattr(args, "ngram", 3)),
+                    "arm": str(getattr(args, "arm", "C3_memory")),
+                    "prompt_tokens": int(getattr(args, "prompt_tokens", 4096)),
+                    "partial": bool(getattr(args, "partial", False)),
+                    "proposer": str(getattr(args, "reservoir", False)),
+                    "draft_head": getattr(args, "draft_head", None),
                 }
             elif gate == "d1":
                 kinds = overrides.get("kinds") or list(config.tasks.kinds)

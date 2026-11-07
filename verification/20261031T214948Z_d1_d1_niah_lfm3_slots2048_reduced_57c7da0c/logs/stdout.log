@@ -1,0 +1,3 @@
+{"component": "d1", "event": "run_created", "gate": "d1", "level": "INFO", "run_dir": "/Volumes/Net/E3/verification/20261031T214948Z_d1_d1_niah_lfm3_slots2048_reduced_57c7da0c", "run_id": "20261031T214948Z_d1_d1_niah_lfm3_slots2048_reduced_57c7da0c", "ts": "2026-10-31T21:49:48Z"}
+{"arms": ["C0_full", "C1_stream", "C3_memory", "C4_memory_w1"], "component": "d1", "depths": [0.1, 0.5, 0.9], "event": "d1_plan", "kinds": ["conditional"], "lengths": [32768], "level": "INFO", "reduced": true, "samples": 3, "ts": "2026-10-31T21:49:51Z"}
+{"component": "d1", "event": "run_sealed", "level": "INFO", "status": "ERROR", "ts": "2026-10-31T21:51:59Z", "verdict": "RuntimeError: shape '[1, 4, 1, 128]' is invalid for input of size 2048"}

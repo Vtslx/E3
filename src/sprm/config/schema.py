@@ -156,6 +156,10 @@ class Tier2Config:
     condition_every_blocks: int
     min_slots_per_block: int
     max_slot_multiplier: float
+    key_singular_floor: float = 2.0e-6
+    stability_buffers: bool = False
+    memory_dtype: Literal["float32", "bfloat16"] = "float32"
+    query_read: bool = False
     anchor_interval: int = 64
     anchor_blend: float = 0.01
     replay_blocks: int = 2
@@ -186,6 +190,10 @@ class Tier2Config:
                 "condition_every_blocks",
                 "min_slots_per_block",
                 "max_slot_multiplier",
+                "key_singular_floor",
+                "stability_buffers",
+                "memory_dtype",
+                "query_read",
                 "anchor_interval",
                 "anchor_blend",
                 "replay_blocks",
@@ -207,6 +215,11 @@ class Tier2Config:
         eta_max = _float(d.get("eta_max", 0.2), f"{where}.eta_max", minimum=0.0, maximum=1.0)
         if eta_min > eta_max:
             raise ConfigError(f"{where}: eta_min ({eta_min}) must be <= eta_max ({eta_max})")
+        memory_dtype = _str(d.get("memory_dtype", "float32"), f"{where}.memory_dtype")
+        if memory_dtype not in {"float32", "bfloat16"}:
+            raise ConfigError(
+                f"{where}.memory_dtype must be 'float32' or 'bfloat16', got {memory_dtype!r}"
+            )
         return cls(
             form=form,  # type: ignore[arg-type]
             num_slots=_int(d.get("num_slots"), f"{where}.num_slots", minimum=1),
@@ -227,6 +240,17 @@ class Tier2Config:
             max_slot_multiplier=_float(
                 d.get("max_slot_multiplier"), f"{where}.max_slot_multiplier", minimum=1.0
             ),
+            key_singular_floor=_float(
+                d.get("key_singular_floor", 2.0e-6),
+                f"{where}.key_singular_floor",
+                minimum=1.0e-12,
+                maximum=1.0e-1,
+            ),
+            stability_buffers=_bool(
+                d.get("stability_buffers", False), f"{where}.stability_buffers"
+            ),
+            memory_dtype=memory_dtype,  # type: ignore[arg-type]
+            query_read=_bool(d.get("query_read", False), f"{where}.query_read"),
             anchor_interval=_int(
                 d.get("anchor_interval", 64), f"{where}.anchor_interval", minimum=1
             ),

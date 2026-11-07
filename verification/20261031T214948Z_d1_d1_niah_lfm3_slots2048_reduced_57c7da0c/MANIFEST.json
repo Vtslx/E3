@@ -1,0 +1,79 @@
+{
+  "argv": [
+    ".venv/bin/sprm",
+    "verify",
+    "d1",
+    "--config",
+    "configs/experiments/d1_niah.yaml",
+    "--slots",
+    "2048",
+    "--kinds",
+    "conditional",
+    "--lengths",
+    "32768",
+    "--samples-per-cell",
+    "1",
+    "--max-new-tokens",
+    "8"
+  ],
+  "artifacts": {
+    "CLAIMS.md": {
+      "sha256": "a41bd3cdb8aeb083f317e15b6acb25e8c7d69ccd0bae478e0c6871489f6604a6",
+      "size": 46
+    },
+    "REPORT.md": {
+      "sha256": "aef857eecb54c640674ac6806b4d5646f629fb43f16a0d782fa9527bb9949356",
+      "size": 1231
+    },
+    "RESULT.json": {
+      "sha256": "41418a3c8496dcb1f0762dea7a644b70f87d244a1c2d3034eed720bd74135130",
+      "size": 247
+    },
+    "config.yaml": {
+      "sha256": "57c7da0c5bb4f86ca01035c4e5ed3b11a648ef8c6a2b2f92459e13fdc18d632b",
+      "size": 2463
+    },
+    "logs/events.jsonl": {
+      "sha256": "2d41cc2df371de2f5471dd64134dd0e18fbc26c65fc6a6fed86b5c509ba9ce11",
+      "size": 729
+    },
+    "logs/stdout.log": {
+      "sha256": "2d41cc2df371de2f5471dd64134dd0e18fbc26c65fc6a6fed86b5c509ba9ce11",
+      "size": 729
+    }
+  },
+  "config": {
+    "sha256": "57c7da0c5bb4f86ca01035c4e5ed3b11a648ef8c6a2b2f92459e13fdc18d632b",
+    "snapshot": "config.yaml"
+  },
+  "duration_s": 131.978,
+  "environment": {
+    "cpu_count": 10,
+    "cuda_available": false,
+    "machine": "arm64",
+    "mps_available": true,
+    "mps_built": true,
+    "mps_recommended_max_memory_bytes": 12713115648,
+    "platform": "macOS-27.2-arm64-arm-64bit-Mach-O",
+    "processor": "arm",
+    "python": "3.14.6",
+    "python_executable": "/Volumes/Net/E3/.venv/bin/python",
+    "ram_total_bytes": 17179869184,
+    "timestamp_utc": "2026-10-31T21:51:59Z",
+    "torch": "2.15.0",
+    "transformers": "5.22.0"
+  },
+  "extra": {},
+  "finished_at": "2026-10-31T21:51:59Z",
+  "gate": "d1",
+  "model": {},
+  "run_id": "20261031T214948Z_d1_d1_niah_lfm3_slots2048_reduced_57c7da0c",
+  "schema_version": 1,
+  "source_tree": {
+    "files": 33,
+    "src_sprm_sha256": "c8fb71a9d85c69440fb73d3f4faecd95e547fe1fcff3378fb1ab5e7f78d2139a"
+  },
+  "started_at": "2026-10-31T21:49:48Z",
+  "status": "ERROR",
+  "verdict": "RuntimeError: shape '[1, 4, 1, 128]' is invalid for input of size 2048"
+}
